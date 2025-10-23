@@ -13,4 +13,5 @@ export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs"
 // Components spécifiques au projet
 export { ChatWidget } from "./chat-widget"
 export { NavigationLoader } from "./navigation-loader"
+export { PageTransition } from "./page-transition"
 export { DepositModal, WithdrawModal } from "./payment-modals"

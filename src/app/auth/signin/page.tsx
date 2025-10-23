@@ -13,32 +13,54 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [errorTimestamp, setErrorTimestamp] = useState<number | null>(null)
   const [formErrors, setFormErrors] = useState<{email?: string, password?: string}>({})
+  const [formErrorsTimestamp, setFormErrorsTimestamp] = useState<number | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const verified = searchParams.get('verified')
   const supabase = createClient()
 
-  // Effet pour nettoyer les erreurs quand les champs sont modifiés
+  // Effet pour nettoyer les erreurs après un délai minimum
   useEffect(() => {
-    if (email && formErrors.email) {
-      setFormErrors(prev => ({ ...prev, email: '' }))
+    if (errorTimestamp) {
+      const timer = setTimeout(() => {
+        setError('')
+        setErrorTimestamp(null)
+      }, 2500) // Garder l'erreur visible 2.5 secondes
+
+      return () => clearTimeout(timer)
     }
-    if (password && formErrors.password) {
-      setFormErrors(prev => ({ ...prev, password: '' }))
+  }, [errorTimestamp])
+
+  // Effet pour nettoyer les erreurs de formulaire après un délai minimum
+  useEffect(() => {
+    if (formErrorsTimestamp && Object.keys(formErrors).length > 0) {
+      const timer = setTimeout(() => {
+        // N'effacer que si l'utilisateur a eu le temps de voir l'erreur
+        const timeElapsed = Date.now() - formErrorsTimestamp
+        if (timeElapsed > 2000) { // 2 secondes minimum
+          setFormErrors({})
+          setFormErrorsTimestamp(null)
+        }
+      }, 2000)
+
+      return () => clearTimeout(timer)
     }
-  }, [email, password, formErrors.email, formErrors.password])
+  }, [formErrorsTimestamp, formErrors])
 
   const getErrorMessage = (error: any) => {
     const message = error?.message || ''
     
     if (message.includes('email') || message.includes('Email')) {
       setFormErrors(prev => ({ ...prev, email: 'Email invalide' }))
+      setFormErrorsTimestamp(Date.now())
       return ''
     }
     
     if (message.includes('password') || message.includes('mot de passe')) {
       setFormErrors(prev => ({ ...prev, password: 'Mot de passe incorrect' }))
+      setFormErrorsTimestamp(Date.now())
       return ''
     }
 
@@ -51,6 +73,7 @@ export default function SignIn() {
         return 'Trop de tentatives. Veuillez réessayer dans quelques minutes.'
       case 'User not found':
         setFormErrors(prev => ({ ...prev, email: 'Aucun compte avec cet email' }))
+        setFormErrorsTimestamp(Date.now())
         return ''
       default:
         return message || 'Une erreur inattendue s\'est produite. Veuillez réessayer.'
@@ -78,6 +101,9 @@ export default function SignIn() {
     }
 
     setFormErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      setFormErrorsTimestamp(Date.now())
+    }
     return isValid
   }
 
@@ -85,6 +111,7 @@ export default function SignIn() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setErrorTimestamp(null)
 
     if (!validateForm()) {
       setLoading(false)
@@ -98,12 +125,17 @@ export default function SignIn() {
       })
 
       if (authError) {
-        setError(getErrorMessage(authError))
+        const errorMessage = getErrorMessage(authError)
+        if (errorMessage) {
+          setError(errorMessage)
+          setErrorTimestamp(Date.now())
+        }
       } else {
         router.push('/dashboard')
       }
     } catch (err) {
       setError('Erreur de connexion. Vérifiez votre connexion internet.')
+      setErrorTimestamp(Date.now())
     }
 
     setLoading(false)

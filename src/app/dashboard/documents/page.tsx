@@ -204,205 +204,214 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Documents & Contrats
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Accédez à tous vos documents légaux, contrats et guides d&apos;investissement
-          </p>
-        </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <DocumentTextIcon className="h-4 w-4 mr-2" />
-          Télécharger tout
-        </Button>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="min-h-full w-full"
+    >
+      <div className="w-full max-w-none px-4 py-6 md:pl-0 md:pr-8 lg:pl-0 lg:pr-12 xl:pl-0 xl:pr-16 2xl:pl-0 2xl:pr-20">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Documents & Contrats
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
+                Accédez à tous vos documents légaux, contrats et guides d&apos;investissement
+              </p>
+            </div>
+            <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95 self-start lg:self-center">
+              <DocumentTextIcon className="h-5 w-5 mr-2" />
+              Télécharger tout
+            </Button>
+          </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {documentStats.map((stat, index) => (
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {documentStats.map((stat, index) => (
+              <motion.div
+                key={stat.title}
+                custom={index}
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+              >
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                        <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                          {stat.title}
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {stat.value}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Documents Section */}
           <motion.div
-            key={stat.title}
-            custom={index}
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {stat.value}
-                    </p>
-                  </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DocumentTextIcon className="h-5 w-5 mr-2" />
+                  Mes Documents
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Filter Buttons */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {[
+                    { value: 'all', label: 'Tous' },
+                    { value: 'contract', label: 'Contrats' },
+                    { value: 'legal', label: 'Légal' },
+                    { value: 'finance', label: 'Finance' },
+                    { value: 'guide', label: 'Guides' }
+                  ].map((filter) => (
+                    <Button
+                      key={filter.value}
+                      variant={activeTab === filter.value ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setActiveTab(filter.value)}
+                      className={activeTab === filter.value ? "bg-blue-600 hover:bg-blue-700" : ""}
+                    >
+                      {filter.label}
+                    </Button>
+                  ))}
                 </div>
+
+                {/* Documents Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredDocuments.map((document) => (
+                    <motion.div
+                      key={document.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="hover:shadow-lg transition-all cursor-pointer hover:border-blue-200 dark:hover:border-blue-700">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <DocumentIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-base">{document.title}</CardTitle>
+                                <div className="flex items-center space-x-2 mt-1">
+                                  <Badge className={getDocumentCategoryColor(document.category)}>
+                                    {getDocumentCategoryLabel(document.category)}
+                                  </Badge>
+                                  <Badge className={getStatusColor(document.status)}>
+                                    {getStatusLabel(document.status)}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            {document.description}
+                          </p>
+                          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
+                            <span>{new Date(document.date).toLocaleDateString('fr-FR')}</span>
+                            <span>{document.size}</span>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setSelectedDocument(document)}
+                            >
+                              <EyeIcon className="h-4 w-4 mr-1" />
+                              Voir
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1">
+                              <DocumentArrowDownIcon className="h-4 w-4 mr-1" />
+                              Télécharger
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {filteredDocuments.length === 0 && (
+                  <div className="text-center py-12">
+                    <DocumentIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Aucun document trouvé dans cette catégorie.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
-        ))}
-      </div>
+        </div>
 
-      {/* Documents Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <DocumentTextIcon className="h-5 w-5 mr-2" />
-              Mes Documents
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {[
-                { value: 'all', label: 'Tous' },
-                { value: 'contract', label: 'Contrats' },
-                { value: 'legal', label: 'Légal' },
-                { value: 'finance', label: 'Finance' },
-                { value: 'guide', label: 'Guides' }
-              ].map((filter) => (
-                <Button
-                  key={filter.value}
-                  variant={activeTab === filter.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setActiveTab(filter.value)}
-                  className={activeTab === filter.value ? "bg-blue-600 hover:bg-blue-700" : ""}
-                >
-                  {filter.label}
-                </Button>
-              ))}
-            </div>
+        {/* Document Preview Modal */}
+        {selectedDocument && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {selectedDocument.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {selectedDocument.description}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedDocument(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-            {/* Documents Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDocuments.map((document) => (
-                <motion.div
-                  key={document.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card className="hover:shadow-lg transition-all cursor-pointer hover:border-blue-200 dark:hover:border-blue-700">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                            <DocumentIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-base">{document.title}</CardTitle>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <Badge className={getDocumentCategoryColor(document.category)}>
-                                {getDocumentCategoryLabel(document.category)}
-                              </Badge>
-                              <Badge className={getStatusColor(document.status)}>
-                                {getStatusLabel(document.status)}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        {document.description}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        <span>{new Date(document.date).toLocaleDateString('fr-FR')}</span>
-                        <span>{document.size}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => setSelectedDocument(document)}
-                        >
-                          <EyeIcon className="h-4 w-4 mr-1" />
-                          Voir
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex-1">
-                          <DocumentArrowDownIcon className="h-4 w-4 mr-1" />
-                          Télécharger
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-
-            {filteredDocuments.length === 0 && (
-              <div className="text-center py-12">
-                <DocumentIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  Aucun document trouvé dans cette catégorie.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Document Preview Modal */}
-      {selectedDocument && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {selectedDocument.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {selectedDocument.description}
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-8 text-center">
+                  <DocumentIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Aperçu du document - {selectedDocument.title}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Fonctionnalité d&apos;aperçu à implémenter
                   </p>
                 </div>
-                <button
-                  onClick={() => setSelectedDocument(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                >
-                  ✕
-                </button>
-              </div>
 
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-8 text-center">
-                <DocumentIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 dark:text-gray-300">
-                  Aperçu du document - {selectedDocument.title}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Fonctionnalité d&apos;aperçu à implémenter
-                </p>
-              </div>
-
-              <div className="flex justify-end mt-6 space-x-3">
-                <Button variant="outline" onClick={() => setSelectedDocument(null)}>
-                  Fermer
-                </Button>
-                <Button>
-                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                  Télécharger
-                </Button>
+                <div className="flex justify-end mt-6 space-x-3">
+                  <Button variant="outline" onClick={() => setSelectedDocument(null)}>
+                    Fermer
+                  </Button>
+                  <Button>
+                    <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                    Télécharger
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

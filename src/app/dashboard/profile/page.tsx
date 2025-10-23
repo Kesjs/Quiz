@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -22,29 +24,58 @@ import {
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: 'Jean',
-    lastName: 'Dupont',
-    email: user?.email || 'jean.dupont@email.com',
-    phone: '+33 6 12 34 56 78',
-    address: '123 Rue de la Paix, 75001 Paris',
-    bio: 'Investisseur passionné par l\'énergie renouvelable et le secteur du GNL.'
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    bio: ''
   });
 
+  // Simulate loading user data
+  useEffect(() => {
+    if (user) {
+      // Simulate API call delay
+      const timer = setTimeout(() => {
+        setFormData({
+          firstName: 'Jean',
+          lastName: 'Dupont',
+          email: user.email || 'jean.dupont@email.com',
+          phone: '+33 6 12 34 56 78',
+          address: '123 Rue de la Paix, 75001 Paris',
+          bio: 'Investisseur passionné par l\'énergie renouvelable et le secteur du GNL.'
+        });
+        setIsLoading(false);
+      }, 1500); // Simulate 1.5s loading
+
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
   // Rediriger si non connecté
-  useState(() => {
+  useEffect(() => {
     if (!user) {
       router.push('/auth/signin');
     }
-  });
+  }, [user, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ici, on ferait l'appel API pour mettre à jour le profil
-    setIsEditing(false);
-    // Simulation de succès
-    console.log('Profil mis à jour:', formData);
+    setIsSubmitting(true);
+    try {
+      // Ici, on ferait l'appel API pour mettre à jour le profil
+      // Simulation d'un délai API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsEditing(false);
+      // Simulation de succès
+      console.log('Profil mis à jour:', formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -56,6 +87,107 @@ export default function ProfilePage() {
 
   if (!user) {
     return <div>Chargement...</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton width={200} height={32} className="mb-2" />
+            <Skeleton width={300} height={20} />
+          </div>
+          <Skeleton width={140} height={40} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main content skeleton */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton width={200} height={24} />
+                <Skeleton width={300} height={16} />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><Skeleton width="100%" height={40} /></div>
+                  <div><Skeleton width="100%" height={40} /></div>
+                </div>
+                <Skeleton width="100%" height={40} />
+                <Skeleton width="100%" height={40} />
+                <Skeleton width="100%" height={80} />
+                <Skeleton width="100%" height={100} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Skeleton width={150} height={24} />
+                <Skeleton width={250} height={16} />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <Skeleton circle width={20} height={20} />
+                    <div className="flex-1">
+                      <Skeleton width={120} height={16} className="mb-1" />
+                      <Skeleton width={80} height={14} />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <Skeleton circle width={20} height={20} />
+                    <div className="flex-1">
+                      <Skeleton width={140} height={16} className="mb-1" />
+                      <Skeleton width={80} height={14} />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar skeleton */}
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <Skeleton circle width={80} height={80} className="mx-auto mb-4" />
+                  <Skeleton width={120} height={20} className="mb-2" />
+                  <Skeleton width={100} height={16} className="mb-3" />
+                  <Skeleton width={60} height={24} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Skeleton width={100} height={20} />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <Skeleton width={100} height={16} />
+                    <Skeleton width={60} height={16} />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Skeleton width={80} height={20} />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} width="100%" height={40} />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -73,6 +205,7 @@ export default function ProfilePage() {
         <Button
           onClick={() => setIsEditing(!isEditing)}
           variant={isEditing ? "outline" : "default"}
+          className="transition-all duration-200 hover:scale-105 active:scale-95"
         >
           {isEditing ? 'Annuler' : 'Modifier le profil'}
         </Button>
@@ -100,7 +233,7 @@ export default function ProfilePage() {
                       id="firstName"
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSubmitting}
                       className="mt-1"
                     />
                   </div>
@@ -110,7 +243,7 @@ export default function ProfilePage() {
                       id="lastName"
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSubmitting}
                       className="mt-1"
                     />
                   </div>
@@ -125,7 +258,7 @@ export default function ProfilePage() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSubmitting}
                       className="pl-10"
                     />
                   </div>
@@ -139,7 +272,7 @@ export default function ProfilePage() {
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSubmitting}
                       className="pl-10"
                     />
                   </div>
@@ -153,7 +286,7 @@ export default function ProfilePage() {
                       id="address"
                       value={formData.address}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('address', e.target.value)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSubmitting}
                       className="pl-10 min-h-[80px]"
                     />
                   </div>
@@ -165,7 +298,7 @@ export default function ProfilePage() {
                     id="bio"
                     value={formData.bio}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('bio', e.target.value)}
-                    disabled={!isEditing}
+                    disabled={!isEditing || isSubmitting}
                     className="mt-1"
                     placeholder="Parlez-nous de vous..."
                   />
@@ -177,11 +310,19 @@ export default function ProfilePage() {
                       type="button"
                       variant="outline"
                       onClick={() => setIsEditing(false)}
+                      disabled={isSubmitting}
                     >
                       Annuler
                     </Button>
-                    <Button type="submit">
-                      Sauvegarder
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Sauvegarde...
+                        </>
+                      ) : (
+                        'Sauvegarder'
+                      )}
                     </Button>
                   </div>
                 )}
@@ -249,6 +390,39 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
+          {/* Badges et Réalisations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <span className="text-yellow-500 mr-2">🏆</span>
+                Réalisations
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center space-x-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <span className="text-2xl">💰</span>
+                <div>
+                  <p className="font-medium text-yellow-800 dark:text-yellow-200 text-sm">Premier Investissement</p>
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400">Atteint le 15 nov. 2023</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <span className="text-2xl">📈</span>
+                <div>
+                  <p className="font-medium text-blue-800 dark:text-blue-200 text-sm">Rentable</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">+2,450€ gagnés</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg opacity-60">
+                <span className="text-2xl">🌟</span>
+                <div>
+                  <p className="font-medium text-purple-800 dark:text-purple-200 text-sm">Expert</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400">Investir 50,000€ pour débloquer</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Statistiques */}
           <Card>
             <CardHeader>
@@ -283,13 +457,13 @@ export default function ProfilePage() {
               <CardTitle className="text-lg">Sécurité</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start transition-all duration-200 hover:scale-105 active:scale-95">
                 Changer le mot de passe
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start transition-all duration-200 hover:scale-105 active:scale-95">
                 Activer 2FA
               </Button>
-              <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
+              <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700 transition-all duration-200 hover:scale-105 active:scale-95">
                 Supprimer le compte
               </Button>
             </CardContent>

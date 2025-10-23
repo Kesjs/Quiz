@@ -8,6 +8,21 @@
   }
 }
 
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0) rotate(45deg);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0) rotate(45deg);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0) rotate(45deg);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0) rotate(45deg);
+  }
+}
+
 .onboarding-highlight {
   animation: pulse-glow 2s infinite;
   position: relative;
@@ -29,6 +44,41 @@
 /* Smooth scrolling for onboarding navigation */
 html {
   scroll-behavior: smooth;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 767px) {
+  .onboarding-modal {
+    font-size: 14px;
+  }
+  
+  .onboarding-modal .onboarding-content {
+    padding: 1rem;
+  }
+  
+  .onboarding-modal .onboarding-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .onboarding-modal .onboarding-progress {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Ensure buttons are always touchable */
+.onboarding-button {
+  min-height: 44px; /* iOS touch target minimum */
+  min-width: 44px;
+}
+
+/* Improved overlay for mobile */
+@media (max-width: 767px) {
+  .onboarding-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
 }
 
 /* Onboarding modal entrance animations */

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { X, ArrowRight, ChevronRight } from 'lucide-react'
+import '../styles/onboarding.css'
 
 interface OnboardingStep {
   id: string
@@ -30,72 +31,128 @@ export function OnboardingModal({
 }: OnboardingModalProps) {
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const [arrowPosition, setArrowPosition] = useState({ top: 0, left: 0 })
+  const [modalDimensions, setModalDimensions] = useState({ width: 340, height: 200 })
   const [isVisible, setIsVisible] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
   const step = steps[currentStep]
 
-  useEffect(() => {
-    if (step) {
-      calculatePosition()
-      setIsVisible(true)
-    }
-  }, [step, currentStep])
-
-  const calculatePosition = () => {
+  const calculatePosition = useCallback(() => {
     if (!step) return
 
     const targetElement = document.querySelector(step.targetSelector)
     if (!targetElement) return
 
     const rect = targetElement.getBoundingClientRect()
-    const modalWidth = 320
-    const modalHeight = 200
-    const margin = 20
+    const isMobile = window.innerWidth < 768 // Mobile breakpoint
+    
+    // Different dimensions for mobile vs desktop
+    const modalWidth = isMobile ? Math.min(window.innerWidth * 0.9, 320) : 340
+    const modalHeight = isMobile ? 250 : 200 // Shorter on mobile to ensure buttons are visible
+    const margin = isMobile ? 10 : 20
 
     let top = 0
     let left = 0
     let arrowTop = 0
     let arrowLeft = 0
 
-    switch (step.position) {
-      case 'top':
-        top = rect.top - modalHeight - margin
-        left = rect.left + (rect.width / 2) - (modalWidth / 2)
-        arrowTop = modalHeight - 10
-        arrowLeft = modalWidth / 2 - 10
-        break
-      case 'bottom':
+    if (isMobile) {
+      // Center horizontally, position below or above target
+      left = (window.innerWidth - modalWidth) / 2
+      
+      // Try to position below first, then above if not enough space
+      const spaceBelow = window.innerHeight - rect.bottom - margin
+      const spaceAbove = rect.top - margin
+      
+      if (spaceBelow >= modalHeight || spaceBelow > spaceAbove) {
+        // Position below
         top = rect.bottom + margin
-        left = rect.left + (rect.width / 2) - (modalWidth / 2)
         arrowTop = -10
-        arrowLeft = modalWidth / 2 - 10
-        break
-      case 'left':
-        top = rect.top + (rect.height / 2) - (modalHeight / 2)
-        left = rect.left - modalWidth - margin
-        arrowTop = modalHeight / 2 - 10
-        arrowLeft = modalWidth - 10
-        break
-      case 'right':
-        top = rect.top + (rect.height / 2) - (modalHeight / 2)
-        left = rect.right + margin
-        arrowTop = modalHeight / 2 - 10
-        arrowLeft = -10
-        break
+      } else {
+        // Position above
+        top = rect.top - modalHeight - margin
+        arrowTop = modalHeight - 10
+      }
+      
+      arrowLeft = modalWidth / 2 - 10
+    } else {
+      // Desktop positioning logic
+      switch (step.position) {
+        case 'top':
+          top = rect.top - modalHeight - margin
+          left = rect.left + (rect.width / 2) - (modalWidth / 2)
+          arrowTop = modalHeight - 10
+          arrowLeft = modalWidth / 2 - 10
+          break
+        case 'bottom':
+          top = rect.bottom + margin
+          left = rect.left + (rect.width / 2) - (modalWidth / 2)
+          arrowTop = -10
+          arrowLeft = modalWidth / 2 - 10
+          break
+        case 'left':
+          top = rect.top + (rect.height / 2) - (modalHeight / 2)
+          left = rect.left - modalWidth - margin
+          arrowTop = modalHeight / 2 - 10
+          arrowLeft = modalWidth - 10
+          break
+        case 'right':
+          top = rect.top + (rect.height / 2) - (modalHeight / 2)
+          left = rect.right + margin
+          arrowTop = modalHeight / 2 - 10
+          arrowLeft = -10
+          break
+      }
     }
 
-    // Ajustements pour rester dans la viewport
+    // Enhanced viewport adjustments
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
 
+    // Horizontal adjustments
     if (left < margin) left = margin
     if (left + modalWidth > viewportWidth - margin) left = viewportWidth - modalWidth - margin
-    if (top < margin) top = margin
-    if (top + modalHeight > viewportHeight - margin) top = viewportHeight - modalHeight - margin
+    
+    // Vertical adjustments with priority to keep buttons visible
+    const minBottomSpace = isMobile ? 120 : 80 // Space needed for buttons
+    
+    if (top < margin) {
+      top = margin
+    }
+    
+    if (top + modalHeight > viewportHeight - minBottomSpace) {
+      // If modal would be cut off, reposition it
+      const availableSpace = viewportHeight - minBottomSpace - margin
+      if (availableSpace > 100) { // Minimum usable height
+        top = viewportHeight - minBottomSpace - modalHeight
+      } else {
+        // Center vertically as fallback
+        top = (viewportHeight - modalHeight) / 2
+      }
+    }
 
     setPosition({ top, left })
     setArrowPosition({ top: arrowTop, left: arrowLeft })
-  }
+    setModalDimensions({ width: modalWidth, height: modalHeight })
+  }, [step])
+
+  useEffect(() => {
+    if (step) {
+      calculatePosition()
+      setIsVisible(true)
+    }
+  }, [step, currentStep, calculatePosition])
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (step) {
+        calculatePosition()
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [step, calculatePosition])
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -145,7 +202,8 @@ export function OnboardingModal({
         style={{
           top: position.top,
           left: position.left,
-          width: 340,
+          width: modalDimensions.width,
+          height: modalDimensions.height,
           maxWidth: '90vw'
         }}
       >

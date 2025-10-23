@@ -72,8 +72,8 @@ export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={`
-        ${isMobileOpen ? 'fixed inset-y-0 left-0 z-50' : 'hidden'} 
-        md:relative md:flex md:flex-shrink-0 h-full
+        ${isMobileOpen ? 'block fixed inset-y-0 left-0 z-50' : 'hidden md:flex md:relative md:flex-shrink-0'} 
+        h-full
       `}>
         <div className="flex flex-col w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl md:shadow-none">
           <div className="flex flex-col h-full">

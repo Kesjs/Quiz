@@ -287,7 +287,7 @@ export default function TransactionsPage() {
             Consultez et gérez toutes vos transactions
           </p>
         </div>
-        <Button onClick={exportToCSV} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={exportToCSV} className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95">
           <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
           Exporter CSV
         </Button>
@@ -343,6 +343,7 @@ export default function TransactionsPage() {
                 setStatusFilter('all');
                 setCurrentPage(1);
               }}
+              className="transition-all duration-200 hover:scale-105 active:scale-95"
             >
               Réinitialiser
             </Button>

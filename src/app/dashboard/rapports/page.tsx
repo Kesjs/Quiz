@@ -173,179 +173,188 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Rapports & Analyses
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Consultez vos rapports financiers et analysez vos performances d&apos;investissement
-          </p>
-        </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <DocumentChartBarIcon className="h-4 w-4 mr-2" />
-          Générer un rapport
-        </Button>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="min-h-full w-full"
+    >
+      <div className="w-full max-w-none px-4 py-6 md:pl-0 md:pr-8 lg:pl-0 lg:pr-12 xl:pl-0 xl:pr-16 2xl:pl-0 2xl:pr-20">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Rapports & Analyses
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
+                Consultez vos rapports financiers et analysez vos performances d&apos;investissement
+              </p>
+            </div>
+            <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95 self-start lg:self-center">
+              <DocumentChartBarIcon className="h-5 w-5 mr-2" />
+              Générer un rapport
+            </Button>
+          </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {reportStats.map((stat, index) => (
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {reportStats.map((stat, index) => (
+              <motion.div
+                key={stat.title}
+                custom={index}
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+              >
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                        <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                          {stat.title}
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {stat.value}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Reports Table */}
           <motion.div
-            key={stat.title}
-            custom={index}
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {stat.value}
-                    </p>
-                  </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DocumentTextIcon className="h-5 w-5 mr-2" />
+                  Rapports Disponibles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Titre</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Taille</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reports.map((report) => (
+                        <TableRow key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <TableCell>
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {report.title}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {report.description}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getReportTypeColor(report.type)}>
+                              {getReportTypeLabel(report.type)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(report.date).toLocaleDateString('fr-FR')}
+                          </TableCell>
+                          <TableCell>{report.size}</TableCell>
+                          <TableCell>
+                            <Badge variant={report.status === 'available' ? 'default' : 'secondary'}>
+                              {report.status === 'available' ? 'Disponible' : 'En cours'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedReport(report)}
+                              >
+                                <EyeIcon className="h-4 w-4 mr-1" />
+                                Voir
+                              </Button>
+                              {report.status === 'available' && (
+                                <Button variant="outline" size="sm">
+                                  <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                                  Télécharger
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
-        ))}
-      </div>
+        </div>
 
-      {/* Reports Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <DocumentTextIcon className="h-5 w-5 mr-2" />
-              Rapports Disponibles
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Titre</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Taille</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reports.map((report) => (
-                    <TableRow key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">
-                            {report.title}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {report.description}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getReportTypeColor(report.type)}>
-                          {getReportTypeLabel(report.type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(report.date).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>{report.size}</TableCell>
-                      <TableCell>
-                        <Badge variant={report.status === 'available' ? 'default' : 'secondary'}>
-                          {report.status === 'available' ? 'Disponible' : 'En cours'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedReport(report)}
-                          >
-                            <EyeIcon className="h-4 w-4 mr-1" />
-                            Voir
-                          </Button>
-                          {report.status === 'available' && (
-                            <Button variant="outline" size="sm">
-                              <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
-                              Télécharger
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+        {/* Report Preview Modal */}
+        {selectedReport && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {selectedReport.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {selectedReport.description}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedReport(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-      {/* Report Preview Modal */}
-      {selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {selectedReport.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {selectedReport.description}
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-8 text-center">
+                  <DocumentChartBarIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Aperçu du rapport - {selectedReport.title}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Fonctionnalité d&apos;aperçu à implémenter
                   </p>
                 </div>
-                <button
-                  onClick={() => setSelectedReport(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                >
-                  ✕
-                </button>
-              </div>
 
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-8 text-center">
-                <DocumentChartBarIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 dark:text-gray-300">
-                  Aperçu du rapport - {selectedReport.title}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Fonctionnalité d&apos;aperçu à implémenter
-                </p>
-              </div>
-
-              <div className="flex justify-end mt-6 space-x-3">
-                <Button variant="outline" onClick={() => setSelectedReport(null)}>
-                  Fermer
-                </Button>
-                <Button>
-                  <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                  Télécharger
-                </Button>
+                <div className="flex justify-end mt-6 space-x-3">
+                  <Button variant="outline" onClick={() => setSelectedReport(null)}>
+                    Fermer
+                  </Button>
+                  <Button>
+                    <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                    Télécharger
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

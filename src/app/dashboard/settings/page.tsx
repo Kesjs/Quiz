@@ -107,7 +107,7 @@ export default function SettingsPage() {
             variant={activeTab === tab.value ? "default" : "outline"}
             size="sm"
             onClick={() => setActiveTab(tab.value)}
-            className={`flex items-center ${activeTab === tab.value ? "bg-blue-600 hover:bg-blue-700" : ""}`}
+            className={`flex items-center transition-all duration-200 hover:scale-105 active:scale-95 ${activeTab === tab.value ? "bg-blue-600 hover:bg-blue-700" : ""}`}
           >
             <tab.icon className="h-4 w-4 mr-2" />
             {tab.label}

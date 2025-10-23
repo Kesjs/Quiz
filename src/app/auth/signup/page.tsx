@@ -14,27 +14,44 @@ export default function SignUp() {
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [errorTimestamp, setErrorTimestamp] = useState<number | null>(null)
   const [success, setSuccess] = useState('')
   const [emailSent, setEmailSent] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
   const [resendSuccess, setResendSuccess] = useState(false)
   const [formErrors, setFormErrors] = useState<{email?: string, password?: string, fullName?: string}>({})
+  const [formErrorsTimestamp, setFormErrorsTimestamp] = useState<number | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
 
-  // Effet pour nettoyer les erreurs quand les champs sont modifiés
+  // Effet pour nettoyer les erreurs après un délai minimum
   useEffect(() => {
-    if (email && formErrors.email) {
-      setFormErrors(prev => ({ ...prev, email: '' }))
+    if (errorTimestamp) {
+      const timer = setTimeout(() => {
+        setError('')
+        setErrorTimestamp(null)
+      }, 2500) // Garder l'erreur visible 2.5 secondes
+
+      return () => clearTimeout(timer)
     }
-    if (password && formErrors.password) {
-      setFormErrors(prev => ({ ...prev, password: '' }))
+  }, [errorTimestamp])
+
+  // Effet pour nettoyer les erreurs de formulaire après un délai minimum
+  useEffect(() => {
+    if (formErrorsTimestamp && Object.keys(formErrors).length > 0) {
+      const timer = setTimeout(() => {
+        // N'effacer que si l'utilisateur a eu le temps de voir l'erreur
+        const timeElapsed = Date.now() - formErrorsTimestamp
+        if (timeElapsed > 2000) { // 2 secondes minimum
+          setFormErrors({})
+          setFormErrorsTimestamp(null)
+        }
+      }, 2000)
+
+      return () => clearTimeout(timer)
     }
-    if (fullName && formErrors.fullName) {
-      setFormErrors(prev => ({ ...prev, fullName: '' }))
-    }
-  }, [email, password, fullName, formErrors])
+  }, [formErrorsTimestamp, formErrors])
 
   const handleResendVerification = async () => {
     setResendLoading(true)
@@ -66,17 +83,20 @@ export default function SignUp() {
     
     if (message.includes('email') || message.includes('Email')) {
       setFormErrors(prev => ({ ...prev, email: 'Email invalide' }))
+      setFormErrorsTimestamp(Date.now())
       return ''
     }
     
     if (message.includes('password') || message.includes('mot de passe')) {
       setFormErrors(prev => ({ ...prev, password: 'Le mot de passe doit contenir au moins 6 caractères' }))
+      setFormErrorsTimestamp(Date.now())
       return ''
     }
 
     switch (message) {
       case 'User already registered':
         setFormErrors(prev => ({ ...prev, email: 'Un compte existe déjà avec cet email' }))
+        setFormErrorsTimestamp(Date.now())
         return ''
       case 'Email rate limit exceeded':
         return 'Trop de tentatives. Veuillez réessayer plus tard.'
@@ -111,6 +131,9 @@ export default function SignUp() {
     }
 
     setFormErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      setFormErrorsTimestamp(Date.now())
+    }
     return isValid
   }
 
@@ -118,7 +141,7 @@ export default function SignUp() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setSuccess('')
+    setErrorTimestamp(null)
 
     if (!validateForm()) {
       setLoading(false)
@@ -138,13 +161,18 @@ export default function SignUp() {
       })
 
       if (authError) {
-        setError(getErrorMessage(authError))
+        const errorMessage = getErrorMessage(authError)
+        if (errorMessage) {
+          setError(errorMessage)
+          setErrorTimestamp(Date.now())
+        }
       } else {
         setEmailSent(true)
         setSuccess('Inscription réussie ! Un email de vérification a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour activer votre compte.')
       }
     } catch (err) {
       setError('Erreur de connexion. Vérifiez votre connexion internet.')
+      setErrorTimestamp(Date.now())
     }
 
     setLoading(false)

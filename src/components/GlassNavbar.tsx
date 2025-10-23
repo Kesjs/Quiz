@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Moon, Sun, BarChart3 } from 'lucide-react'
+import { Moon, Sun, BarChart3, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -11,6 +11,7 @@ export default function GlassNavbar() {
   const [scrolled, setScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -52,8 +53,19 @@ export default function GlassNavbar() {
     document.documentElement.classList.toggle('dark', newTheme === 'dark')
   }
 
+  const handleDashboardNavigation = async () => {
+    if (isLoadingDashboard) return // Prevent multiple clicks
+
+    setIsLoadingDashboard(true)
+    setIsMenuOpen(false) // Close mobile menu if open
+
+    // Redirect to auth verification page
+    router.push('/auth/verify')
+  }
+
   return (
-    <nav 
+    <>
+      <nav 
       className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-6xl rounded-xl transition-all duration-300 ${
         scrolled 
           ? 'bg-black/60 backdrop-blur-lg border border-gray-700/30' 
@@ -111,13 +123,23 @@ export default function GlassNavbar() {
           
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <Link 
-                href="/dashboard" 
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm shadow-lg shadow-blue-500/20 flex items-center"
+              <button 
+                onClick={handleDashboardNavigation}
+                disabled={isLoadingDashboard}
+                className={`bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 text-sm shadow-lg shadow-blue-500/20 flex items-center disabled:opacity-70 disabled:cursor-not-allowed ${isLoadingDashboard ? 'animate-pulse scale-105' : 'hover:opacity-90'}`}
               >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Tableau de bord
-              </Link>
+                {isLoadingDashboard ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Accès en cours...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Tableau de bord
+                  </>
+                )}
+              </button>
             ) : (
               <>
                 <Link 
@@ -187,14 +209,23 @@ export default function GlassNavbar() {
             </Link>
             <div className="pt-2 mt-2 border-t border-gray-800">
               {isAuthenticated ? (
-                <Link 
-                  href="/dashboard" 
-                  className="block text-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center"
-                  onClick={() => setIsMenuOpen(false)}
+                <button 
+                  onClick={handleDashboardNavigation}
+                  disabled={isLoadingDashboard}
+                  className={`w-full text-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed ${isLoadingDashboard ? 'animate-pulse scale-105' : 'hover:opacity-90'}`}
                 >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Tableau de bord
-                </Link>
+                  {isLoadingDashboard ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Accès en cours...
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      Tableau de bord
+                    </>
+                  )}
+                </button>
               ) : (
                 <>
                   <Link 
@@ -218,5 +249,6 @@ export default function GlassNavbar() {
         </div>
       )}
     </nav>
+    </>
   )
 }
