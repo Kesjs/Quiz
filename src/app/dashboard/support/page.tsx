@@ -71,6 +71,7 @@ export default function SupportPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('faq');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [newTicket, setNewTicket] = useState({
     subject: '',
     category: '',
@@ -179,7 +180,12 @@ export default function SupportPage() {
         </div>
 
         {/* Chat intégré */}
-        <ChatWidget />
+        <ChatWidget 
+          isOpen={isChatOpen} 
+          onToggle={() => setIsChatOpen(!isChatOpen)}
+          userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+          userEmail={user?.email}
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
