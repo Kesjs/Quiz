@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SubscriptionModal } from '@/components/dashboard/SubscriptionModal';
-import { DepositModal } from '@/components/dashboard/DepositModal';
+import { DepositModal } from '@/components/ui';
 import { WithdrawModal } from '@/components/dashboard/WithdrawModal';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -168,6 +168,24 @@ export default function PacksPage() {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const handleDeposit = async (amount: number, method: string) => {
+    try {
+      const res = await fetch('/api/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, method }),
+      })
+      if (res.ok) {
+        alert(`Demande de dépôt de $${amount} via ${method.toUpperCase()} enregistrée. Vous recevrez une confirmation par email.`)
+        fetchData()
+      } else {
+        alert('Erreur lors du traitement du dépôt')
+      }
+    } catch (error) {
+      alert('Erreur réseau. Veuillez réessayer.')
+    }
+  }
 
   // Rediriger si non connecté
   useEffect(() => {
@@ -538,11 +556,9 @@ export default function PacksPage() {
 
       {showDepositModal && (
         <DepositModal
-          onConfirm={(amount) => {
-            fetchData(); // Refresh balance from DB
-            setShowDepositModal(false);
-          }}
+          isOpen={showDepositModal}
           onClose={() => setShowDepositModal(false)}
+          onDeposit={handleDeposit}
         />
       )}
 

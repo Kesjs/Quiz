@@ -3,19 +3,22 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { ArrowLeft, Lock, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useLoadingWithDelay } from '@/hooks/useLoadingWithDelay'
 
 export default function UpdatePassword() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+
+  const { loading, startLoading, stopLoading } = useLoadingWithDelay({
+    minDelay: 1200, // Délai minimum pour la mise à jour du mot de passe
+  })
 
   useEffect(() => {
     // Vérifier si l'utilisateur a une session active
@@ -30,20 +33,19 @@ export default function UpdatePassword() {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError('')
 
     if (password !== confirmPassword) {
       setError('Les mots de passe ne correspondent pas')
-      setLoading(false)
       return
     }
 
     if (password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caractères')
-      setLoading(false)
       return
     }
+
+    startLoading()
 
     try {
       const { error } = await supabase.auth.updateUser({
@@ -51,31 +53,30 @@ export default function UpdatePassword() {
       })
 
       if (error) throw error
-      
+
       setSuccess(true)
-      
+
       // Rediriger vers la page de connexion après 3 secondes
       setTimeout(() => {
         router.push('/auth/signin?message=Mot de passe mis à jour avec succès')
       }, 3000)
-      
+
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue. Veuillez réessayer.')
-    } finally {
-      setLoading(false)
+      await stopLoading(false)
     }
   }
 
   if (success) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8 relative">
-        <Link 
-          href="/auth/signin"
+        <button 
+          onClick={() => router.push('/auth/signin')}
           className="absolute top-6 left-6 flex items-center text-sm text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Retour à la connexion
-        </Link>
+        </button>
         
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -111,8 +112,8 @@ export default function UpdatePassword() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8 relative">
-      <Link 
-        href="/auth/signin"
+      <button 
+        onClick={() => router.push('/auth/signin')}
         className="absolute top-6 left-6 flex items-center text-sm text-gray-400 hover:text-white transition-colors"
       >
         <svg 
@@ -130,7 +131,7 @@ export default function UpdatePassword() {
           />
         </svg>
         Retour à la connexion
-      </Link>
+      </button>
       
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -206,12 +207,20 @@ export default function UpdatePassword() {
                 type="submit"
                 disabled={loading}
                 whileTap={{ scale: loading ? 1 : 0.99 }}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 disabled:opacity-80 disabled:cursor-not-allowed relative overflow-hidden"
               >
                 {loading ? (
-                  <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" />
-                ) : null}
-                {loading ? 'Mise à jour en cours...' : 'Mettre à jour le mot de passe'}
+                  <>
+                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                    <span className="font-semibold">Mise à jour en cours...</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 rounded-lg animate-pulse"></div>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold">Mettre à jour le mot de passe</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-cyan-600/0 hover:from-blue-600/10 hover:to-cyan-600/10 rounded-lg transition-all duration-300"></div>
+                  </>
+                )}
               </motion.button>
             </div>
           </form>

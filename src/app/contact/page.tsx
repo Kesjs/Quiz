@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Mail, Phone, MapPin, Clock } from 'lucide-react'
 import { CTAButton } from '@/components/ui/AnimatedButton'
@@ -13,22 +13,27 @@ const fadeInUp = {
 }
 
 export default function ContactPage() {
+  const router = useRouter()
+
+  const navigateTo = (href: string) => {
+    router.push(href)
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3">
+            <button onClick={() => navigateTo('/')} className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">G</span>
               </div>
               <span className="text-white font-bold text-xl">Gazoduc Invest</span>
-            </Link>
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-2">
+            </button>
+            <button onClick={() => navigateTo('/')} className="text-gray-300 hover:text-white transition-colors flex items-center space-x-2">
               <ArrowLeft className="w-4 h-4" />
               <span>Retour à l&apos;accueil</span>
-            </Link>
+            </button>
           </div>
         </div>
       </nav>

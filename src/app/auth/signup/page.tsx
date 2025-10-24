@@ -7,12 +7,12 @@ import Link from 'next/link'
 import { ArrowLeft, Loader2, Mail, Lock, User } from 'lucide-react'
 import { SocialButtons } from '@/components/auth/SocialButtons'
 import { motion } from 'framer-motion'
+import { useLoadingWithDelay } from '@/hooks/useLoadingWithDelay'
 
 export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [errorTimestamp, setErrorTimestamp] = useState<number | null>(null)
   const [success, setSuccess] = useState('')
@@ -24,6 +24,10 @@ export default function SignUp() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+
+  const { loading, startLoading, stopLoading } = useLoadingWithDelay({
+    minDelay: 1200, // Délai minimum légèrement plus long pour l'inscription
+  })
 
   // Effet pour nettoyer les erreurs après un délai minimum
   useEffect(() => {
@@ -139,14 +143,14 @@ export default function SignUp() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError('')
     setErrorTimestamp(null)
 
     if (!validateForm()) {
-      setLoading(false)
       return
     }
+
+    startLoading()
 
     try {
       const { data, error: authError } = await supabase.auth.signUp({
@@ -166,16 +170,17 @@ export default function SignUp() {
           setError(errorMessage)
           setErrorTimestamp(Date.now())
         }
+        await stopLoading(false)
       } else {
         setEmailSent(true)
         setSuccess('Inscription réussie ! Un email de vérification a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour activer votre compte.')
+        await stopLoading(false)
       }
     } catch (err) {
       setError('Erreur de connexion. Vérifiez votre connexion internet.')
       setErrorTimestamp(Date.now())
+      await stopLoading(false)
     }
-
-    setLoading(false)
   }
 
   if (emailSent) {
@@ -260,8 +265,8 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8 relative">
-      <Link 
-        href="/"
+      <button 
+        onClick={() => router.push('/')}
         className="absolute top-6 left-6 flex items-center text-sm text-gray-400 hover:text-white transition-colors"
       >
         <svg 
@@ -279,7 +284,7 @@ export default function SignUp() {
           />
         </svg>
         Retour à l&apos;accueil
-      </Link>
+      </button>
       
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -293,12 +298,12 @@ export default function SignUp() {
             </h2>
             <p className="mt-2 text-sm text-gray-400">
               Déjà un compte ?{' '}
-              <Link
-                href="/auth/signin"
-                className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+              <button
+                onClick={() => router.push('/auth/signin')}
+                className="font-medium text-blue-400 hover:text-blue-300 transition-colors underline"
               >
                 Se connecter
-              </Link>
+              </button>
             </p>
           </div>
 
@@ -395,12 +400,20 @@ export default function SignUp() {
                 type="submit"
                 disabled={loading}
                 whileTap={{ scale: loading ? 1 : 0.99 }}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 disabled:opacity-80 disabled:cursor-not-allowed relative overflow-hidden"
               >
                 {loading ? (
-                  <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" />
-                ) : null}
-                {loading ? 'Inscription en cours...' : 'S\'inscrire'}
+                  <>
+                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                    <span className="font-semibold">Inscription en cours...</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 rounded-lg animate-pulse"></div>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold">S&apos;inscrire</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-cyan-600/0 hover:from-blue-600/10 hover:to-cyan-600/10 rounded-lg transition-all duration-300"></div>
+                  </>
+                )}
               </motion.button>
             </div>
           </form>

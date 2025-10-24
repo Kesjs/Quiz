@@ -2,10 +2,54 @@
 
 import { motion } from 'framer-motion';
 import { TrendingUp, Zap, Award, Flame } from 'lucide-react';
-import { PricingButton } from '@/components/ui/AnimatedButton';
-import Link from 'next/link';
+import { useState } from 'react';
+import { DepositModal } from '@/components/ui';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PricingSection = () => {
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const handleDeposit = async (amount: number, method: string) => {
+    // Vérifier à nouveau si l'utilisateur est connecté avant de procéder
+    if (!user) {
+      router.push('/auth/signin?message=Veuillez-vous-connecter-pour-effectuer-un-dépôt');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, method }),
+      })
+      if (res.ok) {
+        alert(`Demande de dépôt de $${amount} via ${method.toUpperCase()} enregistrée. Vous recevrez une confirmation par email.`)
+        // Fermer le modal après succès
+        setDepositModalOpen(false);
+      } else {
+        alert('Erreur lors du traitement du dépôt')
+      }
+    } catch (error) {
+      alert('Erreur réseau. Veuillez réessayer.')
+    }
+  }
+
+  const handlePlanSelect = (planPrice: number) => {
+    if (!user) {
+      // Rediriger vers la page d'inscription si l'utilisateur n'est pas connecté
+      router.push('/auth/signup?message=Veuillez-vous-inscrire-pour-commencer-vos-investissements');
+      return;
+    }
+
+    // Ouvrir le modal de dépôt si l'utilisateur est connecté
+    setDepositModalOpen(true);
+    // Ici on pourrait pré-remplir le montant avec le prix du plan sélectionné
+    // mais pour l'instant on laisse l'utilisateur entrer le montant manuellement
+  }
+
   const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
     visible: {
@@ -167,9 +211,16 @@ const PricingSection = () => {
                     </ul>
                   </div>
 
-                  <PricingButton href="/auth/signup" popular={plan.popular}>
+                  <button
+                    onClick={() => handlePlanSelect(plan.price)}
+                    className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                      plan.popular
+                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                        : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40'
+                    }`}
+                  >
                     Souscrire {plan.name}
-                  </PricingButton>
+                  </button>
                 </div>
               </motion.div>
             );
@@ -186,6 +237,13 @@ const PricingSection = () => {
           <p>Vous avez besoin d&apos;une solution personnalisée ? <a href="#contact" className="text-blue-300 hover:underline">Contactez-nous</a></p>
         </motion.div>
       </div>
+
+      {/* Modal de dépôt */}
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        onDeposit={handleDeposit}
+      />
     </section>
   );
 };

@@ -7,11 +7,11 @@ import Link from 'next/link'
 import { ArrowLeft, Loader2, Mail, Lock } from 'lucide-react'
 import { SocialButtons } from '@/components/auth/SocialButtons'
 import { motion } from 'framer-motion'
+import { useLoadingWithDelay } from '@/hooks/useLoadingWithDelay'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [errorTimestamp, setErrorTimestamp] = useState<number | null>(null)
   const [formErrors, setFormErrors] = useState<{email?: string, password?: string}>({})
@@ -20,6 +20,10 @@ export default function SignIn() {
   const searchParams = useSearchParams()
   const verified = searchParams.get('verified')
   const supabase = createClient()
+
+  const { loading, startLoading, stopLoading } = useLoadingWithDelay({
+    minDelay: 1000, // Délai minimum de 1 seconde pour les erreurs
+  })
 
   // Effet pour nettoyer les erreurs après un délai minimum
   useEffect(() => {
@@ -109,14 +113,14 @@ export default function SignIn() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError('')
     setErrorTimestamp(null)
 
     if (!validateForm()) {
-      setLoading(false)
       return
     }
+
+    startLoading()
 
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({
@@ -130,21 +134,22 @@ export default function SignIn() {
           setError(errorMessage)
           setErrorTimestamp(Date.now())
         }
+        await stopLoading(false) // Arrêter le loading sur erreur
       } else {
+        // Le loading reste actif et la redirection se fait immédiatement
         router.push('/dashboard')
       }
     } catch (err) {
       setError('Erreur de connexion. Vérifiez votre connexion internet.')
       setErrorTimestamp(Date.now())
+      await stopLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8 relative">
-      <Link 
-        href="/"
+      <button 
+        onClick={() => router.push('/')}
         className="absolute top-6 left-6 flex items-center text-sm text-gray-400 hover:text-white transition-colors"
       >
         <svg 
@@ -162,7 +167,7 @@ export default function SignIn() {
           />
         </svg>
         Retour à l&apos;accueil
-      </Link>
+      </button>
       
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -276,17 +281,21 @@ export default function SignIn() {
                 type="submit"
                 disabled={loading}
                 whileTap={{ scale: loading ? 1 : 0.98 }}
-                className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all ${
-                  loading ? 'opacity-80 cursor-not-allowed' : ''
+                className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ${
+                  loading ? 'opacity-90 cursor-not-allowed bg-gradient-to-r from-blue-400 to-cyan-400 shadow-lg' : 'shadow-md hover:shadow-lg'
                 }`}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" />
-                    Connexion en cours...
+                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                    <span className="font-semibold">Connexion en cours...</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-lg animate-pulse"></div>
                   </>
                 ) : (
-                  'Se connecter'
+                  <>
+                    <span className="font-semibold">Se connecter</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-cyan-600/0 group-hover:from-blue-600/10 group-hover:to-cyan-600/10 rounded-lg transition-all duration-300"></div>
+                  </>
                 )}
               </motion.button>
             </div>
@@ -309,12 +318,12 @@ export default function SignIn() {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-400">
                 Pas encore de compte ?{' '}
-                <Link 
-                  href="/auth/signup" 
-                  className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                <button
+                  onClick={() => router.push('/auth/signup')}
+                  className="font-medium text-blue-400 hover:text-blue-300 transition-colors underline"
                 >
                   S&apos;inscrire
-                </Link>
+                </button>
               </p>
             </div>
           </div>

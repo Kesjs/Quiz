@@ -80,26 +80,30 @@ CREATE POLICY "Users can update own profile" ON public.profiles
 CREATE POLICY "Users can insert own profile" ON public.profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
 
--- RLS Policies for admins (admins can only be viewed by admins)
-CREATE POLICY "Only admins can view admins table" ON public.admins
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE email = (SELECT email FROM auth.users WHERE id = auth.uid())
-        )
+-- Function to check if user is admin (secure function)
+CREATE OR REPLACE FUNCTION public.is_admin(user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.admins
+        WHERE email = (SELECT email FROM auth.users WHERE id = user_id)
     );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Re-enable RLS for admins with proper policy
+ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for admins (using secure function)
+CREATE POLICY "Only admins can view admins table" ON public.admins
+    FOR SELECT USING (public.is_admin(auth.uid()));
 
 -- RLS Policies for plans (public read)
 CREATE POLICY "Anyone can view plans" ON public.plans
     FOR SELECT USING (true);
 
 CREATE POLICY "Only admins can modify plans" ON public.plans
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE email = (SELECT email FROM auth.users WHERE id = auth.uid())
-        )
-    );
+    FOR ALL USING (public.is_admin(auth.uid()));
 
 -- RLS Policies for subscriptions
 CREATE POLICY "Users can view own subscriptions" ON public.subscriptions
@@ -109,12 +113,7 @@ CREATE POLICY "Users can insert own subscriptions" ON public.subscriptions
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Only admins can modify subscriptions" ON public.subscriptions
-    FOR UPDATE USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE email = (SELECT email FROM auth.users WHERE id = auth.uid())
-        )
-    );
+    FOR UPDATE USING (public.is_admin(auth.uid()));
 
 -- RLS Policies for transactions
 CREATE POLICY "Users can view own transactions" ON public.transactions
@@ -124,12 +123,7 @@ CREATE POLICY "Users can insert own transactions" ON public.transactions
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Only admins can view all transactions" ON public.transactions
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM public.admins
-            WHERE email = (SELECT email FROM auth.users WHERE id = auth.uid())
-        )
-    );
+    FOR SELECT USING (public.is_admin(auth.uid()));
 
 -- Function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

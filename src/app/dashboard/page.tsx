@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { DepositModal, WithdrawModal } from '@/components/ui'
 import { useDashboardOnboarding } from '@/hooks/useDashboardOnboarding'
 import { OnboardingModal } from '@/components/OnboardingModal'
-import { plans } from '@/lib/plans'
+import { useCachedPlans } from '@/hooks/useCachedPlans'
 import {
   User,
   TrendingUp,
@@ -50,12 +50,28 @@ export default function Dashboard() {
   const [balance, setBalance] = useState(0)
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactionsPage, setTransactionsPage] = useState(1)
+  const [hasMoreTransactions, setHasMoreTransactions] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [loadingTransactions, setLoadingTransactions] = useState(false)
   const [error, setError] = useState('')
   const [depositModalOpen, setDepositModalOpen] = useState(false)
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  const TRANSACTIONS_PER_PAGE = 20
+
+  // Mémoriser les calculs coûteux
+  const activeSubscriptionsCount = useMemo(() =>
+    subscriptions.filter(s => s.status === 'active').length,
+    [subscriptions]
+  )
+
+  const transactionStats = useMemo(() => ({
+    total: transactions.length,
+    hasMore: hasMoreTransactions
+  }), [transactions.length, hasMoreTransactions])
 
   // Hook d'onboarding
   const {
@@ -69,9 +85,12 @@ export default function Dashboard() {
     resetOnboarding
   } = useDashboardOnboarding(subscriptions.length > 0)
 
-  const fetchData = useCallback(async () => {
+  // Hook pour les plans mis en cache
+  const { plans, loading: plansLoading } = useCachedPlans()
+
+  // Charger le profil utilisateur
+  const fetchProfile = useCallback(async () => {
     try {
-      setError('')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
 
       if (userError) {
@@ -86,7 +105,6 @@ export default function Dashboard() {
         return
       }
 
-      // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -94,17 +112,26 @@ export default function Dashboard() {
         .single()
 
       if (profileError) {
-        setError('Erreur lors du chargement du profil.')
         console.error('Profile error:', profileError)
       } else {
         setProfile(profileData)
       }
 
-      // Fetch subscriptions
+      return user
+    } catch (err) {
+      setError('Erreur inattendue. Veuillez rafraîchir la page.')
+      console.error('Profile fetch error:', err)
+      return null
+    }
+  }, [router, supabase])
+
+  // Charger les souscriptions
+  const fetchSubscriptions = useCallback(async (userId: string) => {
+    try {
       const { data: subs, error: subsError } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
 
       if (subsError) {
         setError('Erreur lors du chargement des souscriptions.')
@@ -112,34 +139,84 @@ export default function Dashboard() {
       } else {
         setSubscriptions(subs || [])
       }
+    } catch (err) {
+      console.error('Subscriptions fetch error:', err)
+    }
+  }, [supabase])
 
-      // Fetch transactions for balance
-      const { data: trans, error: transError } = await supabase
+  // Charger les transactions avec pagination
+  const fetchTransactions = useCallback(async (userId: string, page: number = 1) => {
+    try {
+      setLoadingTransactions(true)
+      const from = (page - 1) * TRANSACTIONS_PER_PAGE
+      const to = from + TRANSACTIONS_PER_PAGE - 1
+
+      const { data: trans, error: transError, count } = await supabase
         .from('transactions')
-        .select('*')
-        .eq('user_id', user.id)
+        .select('*', { count: 'exact' })
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (transError) {
         setError('Erreur lors du chargement des transactions.')
         console.error('Transactions error:', transError)
       } else {
-        setTransactions(trans || [])
-        const total = trans?.reduce((sum, t) => sum + t.amount, 0) || 0
-        setBalance(total)
-      }
+        if (page === 1) {
+          setTransactions(trans || [])
+        } else {
+          setTransactions(prev => [...prev, ...(trans || [])])
+        }
+        setHasMoreTransactions(count ? (from + (trans?.length || 0)) < count : false)
 
+        // Calculer le solde uniquement pour la première page
+        if (page === 1) {
+          const { data: allTrans } = await supabase
+            .from('transactions')
+            .select('amount')
+            .eq('user_id', userId)
+          const total = allTrans?.reduce((sum, t) => sum + t.amount, 0) || 0
+          setBalance(total)
+        }
+      }
+    } catch (err) {
+      console.error('Transactions fetch error:', err)
+    } finally {
+      setLoadingTransactions(false)
+    }
+  }, [supabase])
+
+  // Fonction principale de chargement des données
+  const fetchData = useCallback(async () => {
+    try {
+      setError('')
+      const user = await fetchProfile()
+      if (user) {
+        await Promise.all([
+          fetchSubscriptions(user.id),
+          fetchTransactions(user.id, 1)
+        ])
+      }
     } catch (err) {
       setError('Erreur inattendue. Veuillez rafraîchir la page.')
       console.error('Dashboard error:', err)
     } finally {
       setLoading(false)
     }
-  }, [router, supabase])
+  }, [fetchProfile, fetchSubscriptions, fetchTransactions])
 
+  // Déclencher le chargement des données au montage du composant
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  const loadMoreTransactions = useCallback(async () => {
+    if (!profile?.id || loadingTransactions || !hasMoreTransactions) return
+
+    const nextPage = transactionsPage + 1
+    setTransactionsPage(nextPage)
+    await fetchTransactions(profile.id, nextPage)
+  }, [profile?.id, loadingTransactions, hasMoreTransactions, transactionsPage, fetchTransactions])
 
   const handleSubscribe = async (planId: number, amount: number) => {
     const res = await fetch('/api/subscribe', {
@@ -213,9 +290,9 @@ export default function Dashboard() {
   // Dashboard complet pour tous les utilisateurs
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="min-h-full w-full"
     >
       <div className="w-full max-w-none">
@@ -277,7 +354,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                {subscriptions.filter(s => s.status === 'active').length}
+                {activeSubscriptionsCount}
               </p>
               <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                 Plans d&apos;investissement en cours de génération de revenus
@@ -384,7 +461,7 @@ export default function Dashboard() {
             ) : (
               <div className="overflow-x-auto">
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {transactions.slice(0, 10).map(transaction => {
+                  {transactions.map(transaction => {
                     const date = new Date(transaction.created_at)
                     const getTransactionIcon = (type: string) => {
                       switch (type) {
@@ -436,11 +513,15 @@ export default function Dashboard() {
                     )
                   })}
                 </ul>
-                {transactions.length > 10 && (
+                {hasMoreTransactions && (
                   <div className="mt-4 text-center">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Affichage des 10 dernières transactions • {transactions.length - 10} autres transactions
-                    </p>
+                    <button
+                      onClick={loadMoreTransactions}
+                      disabled={loadingTransactions}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
+                    >
+                      {loadingTransactions ? 'Chargement...' : 'Charger plus'}
+                    </button>
                   </div>
                 )}
               </div>

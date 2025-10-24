@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   Facebook,
@@ -36,8 +36,23 @@ const staggerContainer = {
 }
 
 export default function GlassFooter() {
+  const router = useRouter()
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const navigateTo = (href: string) => {
+    if (href.startsWith('#')) {
+      // Pour les ancres, scroll vers l'élément
+      const element = document.querySelector(href)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    } else {
+      // Pour les pages, utiliser router.push pour navigation rapide
+      router.push(href)
+    }
   }
 
   return (
@@ -131,9 +146,9 @@ export default function GlassFooter() {
                   whileHover={{ x: 5 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link
-                    href={item.href}
-                    className="text-gray-400 hover:text-white transition-all duration-300 flex items-center group"
+                  <button
+                    onClick={() => navigateTo(item.href)}
+                    className="text-gray-400 hover:text-white transition-all duration-300 flex items-center group w-full text-left"
                   >
                     <span className="mr-3 text-lg group-hover:scale-110 transition-transform duration-200">
                       {item.icon}
@@ -141,7 +156,7 @@ export default function GlassFooter() {
                     <span className="group-hover:text-blue-400 transition-colors duration-200">
                       {item.label}
                     </span>
-                  </Link>
+                  </button>
                 </motion.li>
               ))}
             </ul>
@@ -165,9 +180,9 @@ export default function GlassFooter() {
                   whileHover={{ x: 5 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link
-                    href={item.href}
-                    className="text-gray-400 hover:text-white transition-all duration-300 flex items-center group"
+                  <button
+                    onClick={() => navigateTo(item.href)}
+                    className="text-gray-400 hover:text-white transition-all duration-300 flex items-center group w-full text-left"
                   >
                     <span className="mr-3 text-lg group-hover:scale-110 transition-transform duration-200">
                       {item.icon}
@@ -175,7 +190,7 @@ export default function GlassFooter() {
                     <span className="group-hover:text-green-400 transition-colors duration-200">
                       {item.label}
                     </span>
-                  </Link>
+                  </button>
                 </motion.li>
               ))}
             </ul>
@@ -235,17 +250,26 @@ export default function GlassFooter() {
             </div>
 
             <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <Link href="/terms" className="hover:text-white transition-colors duration-200">
+              <button
+                onClick={() => navigateTo('/terms')}
+                className="hover:text-white transition-colors duration-200"
+              >
                 Conditions
-              </Link>
+              </button>
               <span className="text-gray-600">•</span>
-              <Link href="/privacy" className="hover:text-white transition-colors duration-200">
+              <button
+                onClick={() => navigateTo('/privacy')}
+                className="hover:text-white transition-colors duration-200"
+              >
                 Vie privée
-              </Link>
+              </button>
               <span className="text-gray-600">•</span>
-              <Link href="/cookies" className="hover:text-white transition-colors duration-200">
+              <button
+                onClick={() => navigateTo('/cookies')}
+                className="hover:text-white transition-colors duration-200"
+              >
                 Cookies
-              </Link>
+              </button>
             </div>
           </div>
         </motion.div>

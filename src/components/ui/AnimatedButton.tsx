@@ -1,3 +1,5 @@
+'use client'
+
 import { motion } from 'framer-motion'
 import { ArrowRight, ExternalLink, Mail } from 'lucide-react'
 import Link from 'next/link'
@@ -159,13 +161,14 @@ export function AnimatedButton({
 
     return (
       <Link href={href}>
-        <motion.a
+        <motion.div
           className={`${buttonClasses} group`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          onClick={handleClick}
         >
           {content}
-        </motion.a>
+        </motion.div>
       </Link>
     )
   }

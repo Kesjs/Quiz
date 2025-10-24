@@ -24,11 +24,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
+        try {
+          setUser(session?.user ?? null);
+          setLoading(false);
 
-        if (event === 'SIGNED_OUT') {
-          router.push('/auth/signin');
+          if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+            // Handle sign out or token refresh
+            if (event === 'SIGNED_OUT') {
+              router.push('/auth/signin');
+            }
+          }
+        } catch (error) {
+          console.error('Auth state change error:', error);
+          // If there's an auth error, sign out the user
+          setUser(null);
+          setLoading(false);
+          if (event !== 'SIGNED_OUT') {
+            await supabase.auth.signOut();
+          }
         }
       }
     );
