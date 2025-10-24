@@ -28,7 +28,7 @@ export function OnboardingModal({
   currentStep,
   onNext,
   onSkip
-}: OnboardingModalProps) {
+}: OnboardingModalProps): JSX.Element | null {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const [hasScrolled, setHasScrolled] = useState(false)
@@ -93,6 +93,8 @@ export function OnboardingModal({
       updateTargetPosition()
       setIsVisible(true)
     }
+  }, [step, updateTargetPosition, setIsVisible, onNext]) // Added missing dependency array
+
   useEffect(() => {
     if (step) {
       setIsVisible(false)

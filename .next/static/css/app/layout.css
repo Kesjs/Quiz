@@ -1146,6 +1146,9 @@ video {
 .w-9 {
   width: 2.25rem;
 }
+.w-56 {
+  width: 14rem;
+}
 .min-w-\[8rem\] {
   min-width: 8rem;
 }

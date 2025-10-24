@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { createClient } from '@/lib/supabase';
+import { toast } from 'sonner';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -18,61 +20,169 @@ import {
   MapPinIcon,
   CalendarIcon,
   CurrencyEuroIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  KeyIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
+
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  bio: string;
+  dateOfBirth?: string;
+  nationality?: string;
+}
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const supabase = createClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [formData, setFormData] = useState<UserProfile>({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     address: '',
-    bio: ''
+    bio: '',
+    dateOfBirth: '',
+    nationality: ''
   });
 
-  // Simulate loading user data
+  // Load real user data from Supabase
   useEffect(() => {
-    if (user) {
-      // Simulate API call delay
-      const timer = setTimeout(() => {
-        setFormData({
-          firstName: 'Jean',
-          lastName: 'Dupont',
-          email: user.email || 'jean.dupont@email.com',
-          phone: '+33 6 12 34 56 78',
-          address: '123 Rue de la Paix, 75001 Paris',
-          bio: 'Investisseur passionné par l\'énergie renouvelable et le secteur du GNL.'
-        });
-        setIsLoading(false);
-      }, 1500); // Simulate 1.5s loading
+    const loadUserProfile = async () => {
+      if (!user) return;
 
-      return () => clearTimeout(timer);
-    }
+      try {
+        // Load profile data from user metadata
+        const profileData: UserProfile = {
+          firstName: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
+          lastName: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ')[1] || '',
+          email: user.email || '',
+          phone: user.user_metadata?.phone || '',
+          address: user.user_metadata?.address || '',
+          bio: user.user_metadata?.bio || '',
+          dateOfBirth: user.user_metadata?.date_of_birth || '',
+          nationality: user.user_metadata?.nationality || ''
+        };
+
+        setFormData(profileData);
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+        toast.error('Erreur lors du chargement du profil');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserProfile();
   }, [user]);
 
-  // Rediriger si non connecté
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/signin');
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (!user) return 'Utilisateur'
+
+    // Try to get display name from user metadata first
+    if (user.user_metadata?.full_name) {
+      return user.user_metadata.full_name
     }
-  }, [user, router]);
+
+    // Fallback to email username part
+    if (user.email) {
+      return user.email.split('@')[0]
+    }
+
+    return 'Utilisateur'
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      // Ici, on ferait l'appel API pour mettre à jour le profil
-      // Simulation d'un délai API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prepare data for Supabase update
+      const updateData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+        address: formData.address,
+        bio: formData.bio,
+        date_of_birth: formData.dateOfBirth,
+        nationality: formData.nationality,
+        full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+        updated_at: new Date().toISOString()
+      };
+
+      // Update user metadata in Supabase
+      const { error } = await supabase.auth.updateUser({
+        data: updateData
+      });
+
+      if (error) throw error;
+
+      // Update local state
+      setFormData(prev => ({
+        ...prev,
+        ...updateData
+      }));
+
       setIsEditing(false);
-      // Simulation de succès
-      console.log('Profil mis à jour:', formData);
+      toast.success('Profil mis à jour avec succès');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Erreur lors de la mise à jour du profil');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error('Le nouveau mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Update password in Supabase
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) throw error;
+
+      // Reset form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+
+      setIsChangingPassword(false);
+      toast.success('Mot de passe changé avec succès');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Erreur lors du changement de mot de passe');
     } finally {
       setIsSubmitting(false);
     }
@@ -80,6 +190,13 @@ export default function ProfilePage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handlePasswordInputChange = (field: string, value: string) => {
+    setPasswordData(prev => ({
       ...prev,
       [field]: value
     }));
@@ -330,6 +447,102 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
+          {/* Changer le mot de passe */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <KeyIcon className="h-5 w-5 mr-2 text-blue-500" />
+                Sécurité du compte
+              </CardTitle>
+              <CardDescription>
+                Gérez la sécurité de votre compte
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!isChangingPassword ? (
+                <Button
+                  onClick={() => setIsChangingPassword(true)}
+                  variant="outline"
+                  className="transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  <ShieldCheckIcon className="h-4 w-4 mr-2" />
+                  Changer le mot de passe
+                </Button>
+              ) : (
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div>
+                    <Label htmlFor="currentPassword">Mot de passe actuel</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => handlePasswordInputChange('newPassword', e.target.value)}
+                      className="mt-1"
+                      minLength={6}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => handlePasswordInputChange('confirmPassword', e.target.value)}
+                      className="mt-1"
+                      minLength={6}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsChangingPassword(false)
+                        setPasswordData({
+                          currentPassword: '',
+                          newPassword: '',
+                          confirmPassword: ''
+                        })
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      Annuler
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Changement...
+                        </>
+                      ) : (
+                        <>
+                          <KeyIcon className="h-4 w-4 mr-2" />
+                          Changer le mot de passe
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Activité récente */}
           <Card>
             <CardHeader>
@@ -374,10 +587,16 @@ export default function ProfilePage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mb-4">
-                  {formData.firstName[0]}{formData.lastName[0]}
+                  {formData.firstName && formData.lastName
+                    ? `${formData.firstName[0]}${formData.lastName[0]}`
+                    : formData.firstName[0] || formData.lastName[0] || user.email?.[0]?.toUpperCase() || 'U'
+                  }
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {formData.firstName} {formData.lastName}
+                  {formData.firstName && formData.lastName
+                    ? `${formData.firstName} ${formData.lastName}`
+                    : formData.firstName || formData.lastName || getUserDisplayName()
+                  }
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-3">
                   Investisseur Premium
@@ -448,24 +667,6 @@ export default function ProfilePage() {
                   Déc 2023
                 </span>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Sécurité */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Sécurité</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start transition-all duration-200 hover:scale-105 active:scale-95">
-                Changer le mot de passe
-              </Button>
-              <Button variant="outline" className="w-full justify-start transition-all duration-200 hover:scale-105 active:scale-95">
-                Activer 2FA
-              </Button>
-              <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700 transition-all duration-200 hover:scale-105 active:scale-95">
-                Supprimer le compte
-              </Button>
             </CardContent>
           </Card>
         </div>
