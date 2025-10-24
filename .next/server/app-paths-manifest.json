@@ -1,8 +1,0 @@
-{
-  "/auth/signin/page": "app/auth/signin/page.js",
-  "/page": "app/page.js",
-  "/support/page": "app/support/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/settings/page": "app/dashboard/settings/page.js",
-  "/dashboard/packs/page": "app/dashboard/packs/page.js"
-}
