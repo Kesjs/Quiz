@@ -88,7 +88,7 @@ export default function DashboardLayout({
   const pageTransition = {
     type: "tween",
     ease: "anticipate",
-    duration: 0.8 // Increased from 0.4 to 0.8 seconds
+    duration: 0.3 // Reduced from 0.8 to 0.3 seconds for faster transitions
   };
 
   // Show loading while checking authentication

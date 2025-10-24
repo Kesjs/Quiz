@@ -308,7 +308,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
@@ -322,7 +322,7 @@ export default function ProfilePage() {
         <Button
           onClick={() => setIsEditing(!isEditing)}
           variant={isEditing ? "outline" : "default"}
-          className="transition-all duration-200 hover:scale-105 active:scale-95"
+          className="transition-all duration-150 hover:scale-105 active:scale-95"
         >
           {isEditing ? 'Annuler' : 'Modifier le profil'}
         </Button>
@@ -331,7 +331,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Informations générales */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UserIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -351,7 +351,7 @@ export default function ProfilePage() {
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       disabled={!isEditing || isSubmitting}
-                      className="mt-1"
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div>
@@ -361,7 +361,7 @@ export default function ProfilePage() {
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       disabled={!isEditing || isSubmitting}
-                      className="mt-1"
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export default function ProfilePage() {
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       disabled={!isEditing || isSubmitting}
-                      className="pl-10"
+                      className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export default function ProfilePage() {
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       disabled={!isEditing || isSubmitting}
-                      className="pl-10"
+                      className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -404,21 +404,34 @@ export default function ProfilePage() {
                       value={formData.address}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('address', e.target.value)}
                       disabled={!isEditing || isSubmitting}
-                      className="pl-10 min-h-[80px]"
+                      className="pl-10 min-h-[80px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="bio">Biographie</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('bio', e.target.value)}
-                    disabled={!isEditing || isSubmitting}
-                    className="mt-1"
-                    placeholder="Parlez-nous de vous..."
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="dateOfBirth">Date de naissance</Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                      disabled={!isEditing || isSubmitting}
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="nationality">Nationalité</Label>
+                    <Input
+                      id="nationality"
+                      value={formData.nationality}
+                      onChange={(e) => handleInputChange('nationality', e.target.value)}
+                      disabled={!isEditing || isSubmitting}
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      placeholder="Ex: Française"
+                    />
+                  </div>
                 </div>
 
                 {isEditing && (
@@ -448,7 +461,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Changer le mot de passe */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <KeyIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -477,7 +490,7 @@ export default function ProfilePage() {
                       type="password"
                       value={passwordData.currentPassword}
                       onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
-                      className="mt-1"
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                       required
                     />
                   </div>
@@ -489,7 +502,7 @@ export default function ProfilePage() {
                       type="password"
                       value={passwordData.newPassword}
                       onChange={(e) => handlePasswordInputChange('newPassword', e.target.value)}
-                      className="mt-1"
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                       minLength={6}
                       required
                     />
@@ -502,7 +515,7 @@ export default function ProfilePage() {
                       type="password"
                       value={passwordData.confirmPassword}
                       onChange={(e) => handlePasswordInputChange('confirmPassword', e.target.value)}
-                      className="mt-1"
+                      className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                       minLength={6}
                       required
                     />
@@ -544,7 +557,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Activité récente */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle>Activité récente</CardTitle>
               <CardDescription>
@@ -583,7 +596,7 @@ export default function ProfilePage() {
         {/* Sidebar avec stats */}
         <div className="space-y-6">
           {/* Avatar et statut */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mb-4">
@@ -610,7 +623,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Badges et Réalisations */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <span className="text-yellow-500 mr-2">🏆</span>
@@ -643,7 +656,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Statistiques */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="text-lg">Statistiques</CardTitle>
             </CardHeader>

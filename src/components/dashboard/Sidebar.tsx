@@ -58,7 +58,7 @@ export function Sidebar({ isMobileOpen = false, onClose, onLogout }: SidebarProp
     // Small delay to show the loading feedback
     setTimeout(() => {
       router.push(href);
-    }, 150); // 150ms delay to feel the click
+    }, 80); // 80ms delay - plus rapide mais garde l'effet
 
     // Clear loading state after navigation starts
     setTimeout(() => {
@@ -134,14 +134,14 @@ export function Sidebar({ isMobileOpen = false, onClose, onLogout }: SidebarProp
 
       {/* Sidebar */}
       <div className={`
-        ${isMobileOpen ? 'block fixed inset-y-0 left-0 z-50' : 'hidden md:flex md:relative md:flex-shrink-0'} 
+        ${isMobileOpen ? 'block fixed inset-y-0 left-0 z-50 overflow-y-auto' : 'hidden md:flex md:relative md:flex-shrink-0'} 
         h-full
       `}>
         <div className="flex flex-col w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl md:shadow-none">
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col min-h-full">
             {/* Mobile Header with Close Button */}
             <div className="flex items-center justify-between flex-shrink-0 px-6 py-6 pb-5 md:hidden">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Gazoduc Invest
               </h1>
               <button
@@ -155,7 +155,7 @@ export function Sidebar({ isMobileOpen = false, onClose, onLogout }: SidebarProp
 
             {/* Desktop Header */}
             <div className="hidden md:flex items-center flex-shrink-0 px-6 py-6 pb-5">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Gazoduc Invest
               </h1>
             </div>
@@ -184,31 +184,29 @@ export function Sidebar({ isMobileOpen = false, onClose, onLogout }: SidebarProp
             <div className="mx-6 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600"></div>
 
             {/* Section 3: Aide & Déconnexion */}
-            <div className="flex-1 flex flex-col justify-between px-4 pt-6 pb-4">
-              <nav className="space-y-1">
+            <div className="px-4 pt-6 pb-6">
+              <nav className="space-y-1 mb-4">
                 {renderNavItems(helpNavigation)}
               </nav>
 
               {/* Bouton de déconnexion */}
-              <div className="pt-6">
-                <button 
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="group flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-600/20 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoggingOut ? (
-                    <>
-                      <ArrowPathIcon className="mr-4 h-5 w-5 animate-spin" />
-                      <span className="font-medium">Déconnexion...</span>
-                    </>
-                  ) : (
-                    <>
-                      <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
-                      <span className="font-medium">Déconnexion</span>
-                    </>
-                  )}
-                </button>
-              </div>
+              <button 
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="group flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-600/20 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoggingOut ? (
+                  <>
+                    <ArrowPathIcon className="mr-4 h-5 w-5 animate-spin" />
+                    <span className="font-medium">Déconnexion...</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
+                    <span className="font-medium">Déconnexion</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

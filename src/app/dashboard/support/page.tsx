@@ -192,7 +192,7 @@ export default function SupportPage() {
 
         {/* FAQ */}
         <TabsContent value="faq" className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <QuestionMarkCircleIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -233,7 +233,7 @@ export default function SupportPage() {
         {/* Contact */}
         <TabsContent value="contact" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <EnvelopeIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -256,7 +256,7 @@ export default function SupportPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <PhoneIcon className="h-5 w-5 mr-2 text-green-500" />
@@ -279,7 +279,7 @@ export default function SupportPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <ClockIcon className="h-5 w-5 mr-2 text-orange-500" />
@@ -304,7 +304,7 @@ export default function SupportPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <DocumentTextIcon className="h-5 w-5 mr-2 text-purple-500" />
@@ -334,7 +334,7 @@ export default function SupportPage() {
 
         {/* Mes Tickets */}
         <TabsContent value="tickets" className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle>Mes Tickets de Support</CardTitle>
               <CardDescription>
@@ -344,7 +344,7 @@ export default function SupportPage() {
             <CardContent>
               <div className="space-y-4">
                 {tickets.map((ticket) => (
-                  <Card key={ticket.id} className="border-l-4 border-l-blue-500">
+                  <Card key={ticket.id} className="border-l-4 border-l-blue-500 border border-gray-200 dark:border-gray-700">
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -381,7 +381,7 @@ export default function SupportPage() {
 
         {/* Nouveau Ticket */}
         <TabsContent value="new-ticket" className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle>Créer un Nouveau Ticket</CardTitle>
               <CardDescription>

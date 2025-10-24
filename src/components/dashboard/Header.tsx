@@ -134,7 +134,7 @@ export function Header({ onMobileMenuClick, onLogout }: HeaderProps) {
               <span className="text-white font-bold text-sm">G</span>
             </div>
           </Link>
-          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Tableau de bord
           </h2>
         </div>

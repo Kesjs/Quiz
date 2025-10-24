@@ -118,7 +118,7 @@ export default function SettingsPage() {
       {/* Contenu conditionnel */}
       {activeTab === 'notifications' && (
         <div className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <BellIcon className="h-5 w-5 mr-2 text-blue-500" />
@@ -197,7 +197,7 @@ export default function SettingsPage() {
 
       {activeTab === 'preferences' && (
         <div className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <GlobeAltIcon className="h-5 w-5 mr-2 text-green-500" />
@@ -287,7 +287,7 @@ export default function SettingsPage() {
 
       {activeTab === 'security' && (
         <div className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <ShieldCheckIcon className="h-5 w-5 mr-2 text-red-500" />
@@ -366,7 +366,7 @@ export default function SettingsPage() {
 
       {activeTab === 'account' && (
         <div className="space-y-6">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle>Informations du compte</CardTitle>
               <CardDescription>

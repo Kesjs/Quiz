@@ -336,7 +336,7 @@ export default function PacksPage() {
                 const canAfford = balance >= plan.min_amount;
 
                 return (
-                  <Card key={plan.id} className="relative overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card key={plan.id} className="relative overflow-hidden hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
                     <CardHeader className="pb-4">
                       <div className="flex items-center justify-between">
                         <div className={`p-2 rounded-lg ${plan.color}`}>
@@ -451,7 +451,7 @@ export default function PacksPage() {
                   const progress = Math.min(100, Math.max(0, ((plan.duration_days - daysRemaining) / plan.duration_days) * 100));
 
                   return (
-                    <Card key={subscription.id} className="overflow-hidden">
+                    <Card key={subscription.id} className="overflow-hidden border border-gray-200 dark:border-gray-700">
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
@@ -502,7 +502,7 @@ export default function PacksPage() {
                             <span>Progression</span>
                             <span>{Math.round(progress)}%</span>
                           </div>
-                          <Progress value={progress} className="h-2" />
+                          <Progress value={progress} className="h-2 border border-gray-200 dark:border-gray-700" />
                         </div>
                       </CardContent>
 

@@ -250,7 +250,7 @@ export default function SponsorshipPage() {
             animate="visible"
             variants={fadeInUp}
           >
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className={`p-3 rounded-lg ${stat.bgColor}`}>
@@ -277,7 +277,7 @@ export default function SponsorshipPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <Card>
+        <Card className="border border-gray-200 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center">
               <LinkIcon className="h-5 w-5 mr-2" />
@@ -341,7 +341,7 @@ export default function SponsorshipPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UsersIcon className="h-5 w-5 mr-2" />
@@ -398,7 +398,7 @@ export default function SponsorshipPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <TrophyIcon className="h-5 w-5 mr-2" />
@@ -469,7 +469,7 @@ export default function SponsorshipPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.8 }}
       >
-        <Card>
+        <Card className="border border-gray-200 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center">
               <GiftIcon className="h-5 w-5 mr-2" />

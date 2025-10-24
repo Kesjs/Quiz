@@ -238,7 +238,7 @@ export default function DocumentsPage() {
                 animate="visible"
                 variants={fadeInUp}
               >
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex items-center">
                       <div className={`p-3 rounded-lg ${stat.bgColor}`}>
@@ -265,7 +265,7 @@ export default function DocumentsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <DocumentTextIcon className="h-5 w-5 mr-2" />
@@ -303,7 +303,7 @@ export default function DocumentsPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card className="hover:shadow-lg transition-all cursor-pointer hover:border-blue-200 dark:hover:border-blue-700">
+                      <Card className="hover:shadow-lg transition-all cursor-pointer hover:border-blue-200 dark:hover:border-blue-700 border border-gray-200 dark:border-gray-700">
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center space-x-3">

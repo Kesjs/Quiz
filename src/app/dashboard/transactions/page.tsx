@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,15 +36,17 @@ import {
 
 interface Transaction {
   id: string;
+  user_id?: string;
   type: 'deposit' | 'withdrawal' | 'profit' | 'subscription';
   amount: number;
   description: string;
-  date: string;
   status: 'completed' | 'pending' | 'failed';
   reference?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
-type SortField = 'date' | 'amount' | 'type';
+type SortField = 'created_at' | 'amount' | 'type';
 type SortDirection = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE = 10;
@@ -54,7 +58,7 @@ const mockTransactions: Transaction[] = [
     type: 'deposit',
     amount: 5000,
     description: 'Dépôt bancaire',
-    date: '2023-11-15T14:30:00Z',
+    created_at: '2023-11-15T14:30:00Z',
     status: 'completed'
   },
   {
@@ -62,7 +66,7 @@ const mockTransactions: Transaction[] = [
     type: 'profit',
     amount: 75.50,
     description: 'Gains quotidiens - Premium Pack',
-    date: '2023-11-15T09:00:00Z',
+    created_at: '2023-11-15T09:00:00Z',
     status: 'completed',
     reference: 'premium-001'
   },
@@ -71,7 +75,7 @@ const mockTransactions: Transaction[] = [
     type: 'subscription',
     amount: -10000,
     description: 'Souscription Premium Pack',
-    date: '2023-11-14T16:45:00Z',
+    created_at: '2023-11-14T16:45:00Z',
     status: 'completed',
     reference: 'premium-001'
   },
@@ -80,7 +84,7 @@ const mockTransactions: Transaction[] = [
     type: 'profit',
     amount: 45.25,
     description: 'Gains quotidiens - Starter Pack',
-    date: '2023-11-14T09:00:00Z',
+    created_at: '2023-11-14T09:00:00Z',
     status: 'completed',
     reference: 'starter-001'
   },
@@ -89,7 +93,7 @@ const mockTransactions: Transaction[] = [
     type: 'withdrawal',
     amount: -1500,
     description: 'Retrait vers compte bancaire',
-    date: '2023-11-13T11:20:00Z',
+    created_at: '2023-11-13T11:20:00Z',
     status: 'completed'
   },
   {
@@ -97,7 +101,7 @@ const mockTransactions: Transaction[] = [
     type: 'deposit',
     amount: 2500,
     description: 'Dépôt complémentaire',
-    date: '2023-11-12T13:15:00Z',
+    created_at: '2023-11-12T13:15:00Z',
     status: 'completed'
   },
   {
@@ -105,7 +109,7 @@ const mockTransactions: Transaction[] = [
     type: 'profit',
     amount: 62.80,
     description: 'Gains quotidiens - Premium Pack',
-    date: '2023-11-13T09:00:00Z',
+    created_at: '2023-11-13T09:00:00Z',
     status: 'completed',
     reference: 'premium-001'
   },
@@ -114,7 +118,7 @@ const mockTransactions: Transaction[] = [
     type: 'subscription',
     amount: -5000,
     description: 'Souscription Starter Pack',
-    date: '2023-11-10T10:30:00Z',
+    created_at: '2023-11-10T10:30:00Z',
     status: 'completed',
     reference: 'starter-001'
   },
@@ -123,7 +127,7 @@ const mockTransactions: Transaction[] = [
     type: 'withdrawal',
     amount: -800,
     description: 'Retrait partiel',
-    date: '2023-11-11T15:45:00Z',
+    created_at: '2023-11-11T15:45:00Z',
     status: 'pending'
   },
   {
@@ -131,7 +135,7 @@ const mockTransactions: Transaction[] = [
     type: 'profit',
     amount: 25.00,
     description: 'Gains quotidiens - Starter Pack',
-    date: '2023-11-12T09:00:00Z',
+    created_at: '2023-11-12T09:00:00Z',
     status: 'completed',
     reference: 'starter-001'
   },
@@ -140,7 +144,7 @@ const mockTransactions: Transaction[] = [
     type: 'deposit',
     amount: 10000,
     description: 'Dépôt initial',
-    date: '2023-11-09T12:00:00Z',
+    created_at: '2023-11-09T12:00:00Z',
     status: 'completed'
   },
   {
@@ -148,7 +152,7 @@ const mockTransactions: Transaction[] = [
     type: 'profit',
     amount: 50.75,
     description: 'Gains quotidiens - Premium Pack',
-    date: '2023-11-11T09:00:00Z',
+    created_at: '2023-11-11T09:00:00Z',
     status: 'completed',
     reference: 'premium-001'
   }
@@ -157,24 +161,85 @@ const mockTransactions: Transaction[] = [
 export default function TransactionsPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const supabase = createClient();
+
+  // États pour les données et le chargement
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // États pour les filtres et la recherche
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  // Fonction pour récupérer les transactions depuis Supabase
+  const fetchTransactions = useCallback(async () => {
+    console.log('🔍 Début du chargement des transactions');
+    console.log('👤 Utilisateur connecté:', user);
+
+    if (!user) {
+      console.log('❌ Aucun utilisateur connecté');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      console.log('🔄 Requête Supabase en cours...');
+      const { data, error: fetchError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      console.log('📊 Réponse Supabase:', { data, error: fetchError });
+
+      if (fetchError) {
+        console.error('❌ Erreur Supabase:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('✅ Transactions chargées:', data?.length || 0, 'éléments');
+      setTransactions(data || []);
+    } catch (err) {
+      console.error('❌ Erreur lors du chargement des transactions:', err);
+      setError('Impossible de charger les transactions. Veuillez réessayer.');
+      toast.error('Erreur lors du chargement des transactions');
+    } finally {
+      console.log('🏁 Fin du chargement');
+      setIsLoading(false);
+    }
+  }, [user, supabase]);
 
   useEffect(() => {
     if (!user) {
       router.push('/auth/signin');
+      return;
     }
-  }, [user, router]);
+
+    // Test de connexion Supabase
+    const testConnection = async () => {
+      try {
+        console.log('🔌 Test de connexion Supabase...');
+        const { data, error } = await supabase.from('transactions').select('count', { count: 'exact', head: true });
+        console.log('🔌 Test de connexion réussi:', { data, error });
+      } catch (err) {
+        console.error('🔌 Erreur de connexion Supabase:', err);
+      }
+    };
+
+    testConnection();
+    fetchTransactions();
+  }, [user, router, fetchTransactions]);
 
   // Filtrage et tri des transactions
   const filteredAndSortedTransactions = useMemo(() => {
-    let filtered = mockTransactions.filter(transaction => {
+    let filtered = transactions.filter(transaction => {
       const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           transaction.reference?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
@@ -188,7 +253,7 @@ export default function TransactionsPage() {
       let aValue: any = a[sortField];
       let bValue: any = b[sortField];
 
-      if (sortField === 'date') {
+      if (sortField === 'created_at') {
         aValue = new Date(aValue).getTime();
         bValue = new Date(bValue).getTime();
       }
@@ -201,7 +266,7 @@ export default function TransactionsPage() {
     });
 
     return filtered;
-  }, [searchTerm, typeFilter, statusFilter, sortField, sortDirection]);
+  }, [searchTerm, typeFilter, statusFilter, sortField, sortDirection, transactions]);
 
   const paginatedTransactions = filteredAndSortedTransactions.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -214,7 +279,59 @@ export default function TransactionsPage() {
     return <div>Chargement...</div>;
   }
 
-  const handleSort = (field: SortField) => {
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Historique des Transactions
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Chargement en cours...
+            </p>
+          </div>
+        </div>
+        <Card className="border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
+              Chargement des transactions...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Historique des Transactions
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Une erreur s&apos;est produite
+            </p>
+          </div>
+        </div>
+        <Card className="border border-red-200 dark:border-red-800">
+          <CardContent className="p-8">
+            <div className="text-center">
+              <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+              <Button onClick={fetchTransactions} variant="outline">
+                Réessayer
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const handleSort = (field: 'created_at' | 'amount' | 'type') => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -227,7 +344,7 @@ export default function TransactionsPage() {
     const csvContent = [
       ['Date', 'Type', 'Description', 'Montant', 'Statut', 'Référence'].join(','),
       ...filteredAndSortedTransactions.map(t => [
-        new Date(t.date).toLocaleDateString('fr-FR'),
+        new Date(t.created_at).toLocaleDateString('fr-FR'),
         t.type,
         `"${t.description}"`,
         t.amount,
@@ -284,7 +401,7 @@ export default function TransactionsPage() {
             Historique des Transactions
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Consultez et gérez toutes vos transactions
+            Consultez l&apos;historique de toutes vos transactions financières
           </p>
         </div>
         <Button onClick={exportToCSV} className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95">
@@ -294,7 +411,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filtres et recherche */}
-      <Card>
+      <Card className="border border-gray-200 dark:border-gray-700">
         <CardHeader>
           <CardTitle className="text-lg">Filtres et recherche</CardTitle>
         </CardHeader>
@@ -352,18 +469,18 @@ export default function TransactionsPage() {
       </Card>
 
       {/* Table des transactions */}
-      <Card>
+      <Card className="border border-gray-200 dark:border-gray-700">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                  onClick={() => handleSort('date')}
+                  onClick={() => handleSort('created_at')}
                 >
                   <div className="flex items-center">
                     Date
-                    {sortField === 'date' ? (
+                    {sortField === 'created_at' ? (
                       sortDirection === 'asc' ? <ArrowUpIcon className="ml-1 h-4 w-4" /> : <ArrowDownIcon className="ml-1 h-4 w-4" />
                     ) : (
                       <ArrowsUpDownIcon className="ml-1 h-4 w-4 opacity-50" />
@@ -406,14 +523,14 @@ export default function TransactionsPage() {
                   <TableCell>
                     <div>
                       <div className="font-medium">
-                        {new Date(transaction.date).toLocaleDateString('fr-FR', {
+                        {new Date(transaction.created_at).toLocaleDateString('fr-FR', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric'
                         })}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(transaction.date).toLocaleTimeString('fr-FR', {
+                        {new Date(transaction.created_at).toLocaleTimeString('fr-FR', {
                           hour: '2-digit',
                           minute: '2-digit'
                         })}

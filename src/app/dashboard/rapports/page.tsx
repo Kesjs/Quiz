@@ -207,7 +207,7 @@ export default function ReportsPage() {
                 animate="visible"
                 variants={fadeInUp}
               >
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex items-center">
                       <div className={`p-3 rounded-lg ${stat.bgColor}`}>
@@ -234,7 +234,7 @@ export default function ReportsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <DocumentTextIcon className="h-5 w-5 mr-2" />
