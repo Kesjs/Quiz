@@ -218,13 +218,13 @@ export default function Dashboard() {
       transition={{ duration: 0.6 }}
       className="min-h-full w-full"
     >
-      <div className="w-full max-w-none px-4 py-6 md:pl-0 md:pr-8 lg:pl-0 lg:pr-12 xl:pl-0 xl:pr-16 2xl:pl-0 2xl:pr-20">
+      <div className="w-full max-w-none">
         <div className="space-y-6 md:space-y-8">
           <div className="mb-6 md:mb-8 dashboard-header">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2 px-2">Tableau de bord - {profile?.full_name}</h1>
-                <p className="text-gray-600 px-2 text-sm sm:text-base">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2 px-2 text-gray-900 dark:text-white">Tableau de bord - {profile?.full_name}</h1>
+                <p className="text-gray-600 dark:text-gray-400 px-2 text-sm sm:text-base">
                   Gérez vos investissements dans le GNL et suivez vos performances en temps réel
                 </p>
               </div>
@@ -241,80 +241,80 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow hover:shadow-lg transition-all duration-200 balance-card group cursor-pointer border border-gray-100 hover:border-green-200">
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 balance-card group cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-green-200 dark:hover:border-green-600">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Solde disponible</h3>
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                  <DollarSign className="w-4 h-4 text-green-600" />
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Solde disponible</h3>
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
+                  <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
                 </div>
               </div>
-              <p className="text-xl md:text-2xl font-bold text-green-600 mb-1">${balance.toFixed(2)}</p>
-              <p className="text-xs md:text-sm text-gray-500 mb-4">
+              <p className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400 mb-1">${balance.toFixed(2)}</p>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Montant disponible pour investir ou retirer
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setDepositModalOpen(true)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md"
+                  className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white text-sm px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md dark:shadow-gray-900/50"
                 >
                   Dépôt
                 </button>
                 <button
                   onClick={() => setWithdrawModalOpen(true)}
                   disabled={balance <= 0}
-                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md disabled:transform-none"
+                  className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md dark:shadow-gray-900/50 disabled:transform-none"
                 >
                   Retrait
                 </button>
               </div>
             </div>
 
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow hover:shadow-lg transition-all duration-200 subscriptions-active-card group cursor-pointer border border-gray-100 hover:border-blue-200">
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 subscriptions-active-card group cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Souscriptions actives</h3>
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Souscriptions actives</h3>
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
-              <p className="text-xl md:text-2xl font-bold text-blue-600 mb-1">
+              <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                 {subscriptions.filter(s => s.status === 'active').length}
               </p>
-              <p className="text-xs md:text-sm text-gray-500">
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                 Plans d&apos;investissement en cours de génération de revenus
               </p>
             </div>
 
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow hover:shadow-lg transition-all duration-200 sm:col-span-2 lg:col-span-1 performance-card group cursor-pointer border border-gray-100 hover:border-purple-200">
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 sm:col-span-2 lg:col-span-1 performance-card group cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-600">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Performance totale</h3>
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                  <BarChart3 className="w-4 h-4 text-purple-600" />
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Performance totale</h3>
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
+                  <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
-              <p className="text-xl md:text-2xl font-bold text-purple-600 mb-1">${balance.toFixed(2)}</p>
-              <p className="text-xs md:text-sm text-gray-500">
+              <p className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">${balance.toFixed(2)}</p>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                 Gains cumulés depuis le début de vos investissements
               </p>
             </div>
           </div>
-          <div className="bg-white p-4 md:p-6 rounded-lg shadow mb-6 md:mb-8 subscriptions-section">
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow mb-6 md:mb-8 subscriptions-section">
             <div className="mb-4">
-              <h2 className="text-lg md:text-xl font-bold mb-2">Mes Souscriptions</h2>
-              <p className="text-sm text-gray-600">
+              <h2 className="text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-white">Mes Souscriptions</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Liste de vos investissements actifs et leur statut actuel
               </p>
             </div>
             {subscriptions.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BarChart3 className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <p className="text-gray-500 mb-2">Aucune souscription active</p>
-                <p className="text-sm text-gray-400">Commencez par choisir un plan d&apos;investissement ci-dessous</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-2">Aucune souscription active</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Commencez par choisir un plan d&apos;investissement ci-dessous</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {subscriptions.map(sub => {
                     const plan = plans.find(p => p.id === sub.plan_id)
                     const startDate = new Date(sub.start_date)
@@ -322,25 +322,25 @@ export default function Dashboard() {
                     endDate.setDate(startDate.getDate() + (plan?.duration_days || 30))
 
                     return (
-                      <li key={sub.id} className="py-4 px-2 hover:bg-gray-50 transition-colors">
+                      <li key={sub.id} className="py-4 px-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-semibold text-gray-900">{plan?.name || `Plan ${sub.plan_id}`}</h3>
+                              <h3 className="font-semibold text-gray-900 dark:text-white">{plan?.name || `Plan ${sub.plan_id}`}</h3>
                               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                 sub.status === 'active'
-                                  ? 'bg-green-100 text-green-800 border border-green-200'
+                                  ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700'
                                   : sub.status === 'inactive'
-                                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                                  : 'bg-gray-100 text-gray-800 border border-gray-200'
+                                  ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700'
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600'
                               }`}>
                                 {sub.status === 'active' ? '✓ Actif' : sub.status === 'inactive' ? '⏸ Inactif' : '✓ Terminé'}
                               </span>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
                               <div>
                                 <span className="font-medium">Investissement:</span>
-                                <p className="text-green-600 font-semibold">${sub.amount}</p>
+                                <p className="text-green-600 dark:text-green-400 font-semibold">${sub.amount}</p>
                               </div>
                               <div>
                                 <span className="font-medium">Début:</span>
@@ -352,7 +352,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                             {plan && (
-                              <div className="mt-2 text-sm text-gray-500">
+                              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 <span className="font-medium">Profit quotidien estimé:</span> ${plan.daily_profit} •
                                 <span className="ml-2 font-medium">Durée:</span> {plan.duration_days} jours
                               </div>
@@ -366,33 +366,33 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <div className="bg-white p-4 md:p-6 rounded-lg shadow mb-6 md:mb-8 transactions-section">
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow mb-6 md:mb-8 transactions-section">
             <div className="mb-4">
-              <h2 className="text-lg md:text-xl font-bold mb-2">Historique des Transactions</h2>
-              <p className="text-sm text-gray-600">
+              <h2 className="text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-white">Historique des Transactions</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Suivez toutes vos transactions : investissements, gains et retraits
               </p>
             </div>
             {transactions.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <p className="text-gray-500 mb-2">Aucune transaction</p>
-                <p className="text-sm text-gray-400">Vos transactions apparaîtront ici après votre premier investissement</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-2">Aucune transaction</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Vos transactions apparaîtront ici après votre premier investissement</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {transactions.slice(0, 10).map(transaction => {
                     const date = new Date(transaction.created_at)
                     const getTransactionIcon = (type: string) => {
                       switch (type) {
-                        case 'deposit': return <ArrowUpRight className="w-5 h-5 text-green-600" />
-                        case 'subscription': return <TrendingUp className="w-5 h-5 text-blue-600" />
-                        case 'earnings': return <Gem className="w-5 h-5 text-purple-600" />
-                        case 'withdrawal': return <ArrowDownRight className="w-5 h-5 text-red-600" />
-                        default: return <CreditCard className="w-5 h-5 text-gray-600" />
+                        case 'deposit': return <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        case 'subscription': return <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        case 'earnings': return <Gem className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        case 'withdrawal': return <ArrowDownRight className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        default: return <CreditCard className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       }
                     }
                     const getTransactionLabel = (type: string) => {
@@ -405,20 +405,20 @@ export default function Dashboard() {
                       }
                     }
                     const getAmountColor = (type: string, amount: number) => {
-                      if (type === 'withdrawal' || type === 'subscription') return 'text-red-600'
-                      return 'text-green-600'
+                      if (type === 'withdrawal' || type === 'subscription') return 'text-red-600 dark:text-red-400'
+                      return 'text-green-600 dark:text-green-400'
                     }
 
                     return (
-                      <li key={transaction.id} className="py-3 px-2 hover:bg-gray-50 transition-colors">
+                      <li key={transaction.id} className="py-3 px-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                               {getTransactionIcon(transaction.type)}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{getTransactionLabel(transaction.type)}</p>
-                              <p className="text-sm text-gray-500">
+                              <p className="font-medium text-gray-900 dark:text-white">{getTransactionLabel(transaction.type)}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {date.toLocaleDateString('fr-FR')} à {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
@@ -428,7 +428,7 @@ export default function Dashboard() {
                               {transaction.amount >= 0 ? '+' : ''}${transaction.amount.toFixed(2)}
                             </p>
                             {transaction.description && (
-                              <p className="text-xs text-gray-500">{transaction.description}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{transaction.description}</p>
                             )}
                           </div>
                         </div>
@@ -438,7 +438,7 @@ export default function Dashboard() {
                 </ul>
                 {transactions.length > 10 && (
                   <div className="mt-4 text-center">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Affichage des 10 dernières transactions • {transactions.length - 10} autres transactions
                     </p>
                   </div>

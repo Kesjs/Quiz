@@ -162,13 +162,7 @@ export default function HowItWorks() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-            Rejoignez des milliers d&apos;investisseurs qui font déjà croître leur patrimoine avec nous
-          </p>
-          <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full font-semibold text-sm hover:opacity-90 transition-all hover:shadow-lg hover:shadow-blue-500/30 flex items-center mx-auto group">
-            Commencer maintenant
-            <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          
         </motion.div>
       </div>
     </section>

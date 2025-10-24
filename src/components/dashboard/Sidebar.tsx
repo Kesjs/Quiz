@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { HomeIcon, ChartBarIcon, CurrencyDollarIcon, UserCircleIcon, Cog6ToothIcon, LifebuoyIcon, ArrowRightOnRectangleIcon, DocumentTextIcon, DocumentChartBarIcon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { HomeIcon, ChartBarIcon, CurrencyDollarIcon, UserCircleIcon, Cog6ToothIcon, LifebuoyIcon, ArrowRightOnRectangleIcon, DocumentTextIcon, DocumentChartBarIcon, UserPlusIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 const mainNavigation = [
   { name: 'Tableau de bord', href: '/dashboard', icon: HomeIcon },
@@ -24,38 +26,98 @@ const helpNavigation = [
 interface SidebarProps {
   isMobileOpen?: boolean;
   onClose?: () => void;
+  onLogout?: () => void;
 }
 
-export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
+export function Sidebar({ isMobileOpen = false, onClose, onLogout }: SidebarProps) {
   const pathname = usePathname();
-  
+  const router = useRouter();
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut || !onLogout) return;
+    
+    setIsLoggingOut(true);
+    try {
+      await onLogout();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const handleNavigation = async (href: string, itemName: string) => {
+    if (pathname === href) return; // Already on this page
+
+    // Close mobile sidebar immediately
+    if (onClose) onClose();
+
+    // Set loading state
+    setNavigatingTo(href);
+
+    // Small delay to show the loading feedback
+    setTimeout(() => {
+      router.push(href);
+    }, 150); // 150ms delay to feel the click
+
+    // Clear loading state after navigation starts
+    setTimeout(() => {
+      setNavigatingTo(null);
+    }, 300);
+  };
+
   const renderNavItems = (items: typeof mainNavigation) => {
     return items.map((item) => {
       const isActive = pathname === item.href;
+      const isNavigating = navigatingTo === item.href;
+
       return (
-        <Link
+        <motion.div
           key={item.name}
-          href={item.href}
-          onClick={() => {
-            // Close mobile sidebar when clicking on a menu item
-            if (onClose) onClose();
-          }}
-          className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-            isActive
-              ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white hover:shadow-sm'
-          }`}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.1 }}
         >
-          <item.icon
-            className={`mr-4 flex-shrink-0 h-5 w-5 transition-colors duration-200 ${
+          <button
+            onClick={() => handleNavigation(item.href, item.name)}
+            disabled={isNavigating}
+            className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed ${
               isActive
-                ? 'text-blue-500'
-                : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm'
+                : isNavigating
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 shadow-sm animate-pulse'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white hover:shadow-sm'
             }`}
-            aria-hidden="true"
-          />
-          <span className="font-medium">{item.name}</span>
-        </Link>
+          >
+            <div className="relative mr-4 flex-shrink-0 h-5 w-5">
+              {isNavigating ? (
+                <motion.div
+                  initial={{ opacity: 0, rotate: 0 }}
+                  animate={{ opacity: 1, rotate: 360 }}
+                  transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+                >
+                  <ArrowPathIcon className="h-5 w-5 text-blue-500" />
+                </motion.div>
+              ) : (
+                <item.icon
+                  className={`transition-colors duration-200 ${
+                    isActive
+                      ? 'text-blue-500'
+                      : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'
+                  }`}
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+            <span className="font-medium">{item.name}</span>
+            {isNavigating && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: 20 }}
+                className="ml-auto h-1 bg-blue-500 rounded-full"
+              />
+            )}
+          </button>
+        </motion.div>
       );
     });
   };
@@ -129,9 +191,22 @@ export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
 
               {/* Bouton de déconnexion */}
               <div className="pt-6">
-                <button className="group flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-600/20 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
-                  <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
-                  <span className="font-medium">Déconnexion</span>
+                <button 
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="group flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-600/20 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <ArrowPathIcon className="mr-4 h-5 w-5 animate-spin" />
+                      <span className="font-medium">Déconnexion...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowRightOnRectangleIcon className="mr-4 h-5 w-5" />
+                      <span className="font-medium">Déconnexion</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

@@ -2,9 +2,29 @@
 
 import { motion } from 'framer-motion'
 import { ArrowRight, BarChart2, Shield, Zap } from 'lucide-react'
-import Link from 'next/link'
+import { CTAButton, SecondaryButton } from '@/components/ui/AnimatedButton'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function HeroSection() {
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+
+  const handleStartClick = async () => {
+    if (isLoading) return
+
+    setIsLoading(true)
+
+    // Small delay to show the loading feedback
+    setTimeout(() => {
+      router.push('/auth/signup')
+    }, 200) // 200ms delay to feel the click
+
+    // Keep loading state active until navigation completes
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 1500) // Keep spinner for 1.5s to cover navigation
+  }
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Arrière-plan avec dégradé et effet de particules */}
@@ -52,19 +72,16 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
-            <Link 
-              href="/auth/signup" 
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full font-semibold text-sm hover:opacity-90 transition-opacity flex items-center group"
+            <CTAButton
+              onClick={handleStartClick}
+              loading={isLoading}
+              loadingText="Inscription en cours..."
             >
               Commencer maintenant
-              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href="#how-it-works" 
-              className="px-8 py-4 bg-transparent text-white border border-gray-700 rounded-full font-medium text-sm hover:bg-gray-800/50 transition-colors"
-            >
+            </CTAButton>
+            <SecondaryButton href="#how-it-works">
               En savoir plus
-            </Link>
+            </SecondaryButton>
           </motion.div>
 
           <motion.div 

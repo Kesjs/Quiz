@@ -11,6 +11,7 @@ import {
   Star,
   ArrowRight
 } from 'lucide-react'
+import { CTAButton, ContactButton } from '@/components/ui/AnimatedButton'
 
 // Import dynamique des composants avec chargement personnalisé
 const GlassNavbar = dynamic(() => import('@/components/GlassNavbar'), { ssr: false })
@@ -150,18 +151,12 @@ function ContactSection() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/auth/signup" 
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
-            >
+            <CTAButton href="/auth/signup">
               Ouvrir un compte
-            </Link>
-            <Link 
-              href="mailto:contact@gazoducinvest.com" 
-              className="px-8 py-4 bg-transparent text-white border border-gray-700 rounded-full font-medium hover:bg-gray-800/50 transition-colors text-sm"
-            >
+            </CTAButton>
+            <ContactButton href="mailto:contact@gazoducinvest.com">
               Nous contacter
-            </Link>
+            </ContactButton>
           </div>
         </motion.div>
       </div>

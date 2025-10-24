@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { TrendingUp, Zap, Award, Flame } from 'lucide-react';
+import { PricingButton } from '@/components/ui/AnimatedButton';
 import Link from 'next/link';
 
 const PricingSection = () => {
@@ -166,17 +167,9 @@ const PricingSection = () => {
                     </ul>
                   </div>
 
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full py-3 px-6 rounded-lg font-semibold transition-all mt-auto ${
-                      plan.popular
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 text-white'
-                        : 'bg-white/10 hover:bg-white/20 text-white'
-                    }`}
-                  >
-                    <Link href="/auth/signup">Souscrire {plan.name}</Link>
-                  </motion.button>
+                  <PricingButton href="/auth/signup" popular={plan.popular}>
+                    Souscrire {plan.name}
+                  </PricingButton>
                 </div>
               </motion.div>
             );

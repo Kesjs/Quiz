@@ -179,7 +179,7 @@ export default function ReportsPage() {
       transition={{ duration: 0.6 }}
       className="min-h-full w-full"
     >
-      <div className="w-full max-w-none px-4 py-6 md:pl-0 md:pr-8 lg:pl-0 lg:pr-12 xl:pl-0 xl:pr-16 2xl:pl-0 2xl:pr-20">
+      <div className="w-full max-w-none">
         <div className="space-y-8">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

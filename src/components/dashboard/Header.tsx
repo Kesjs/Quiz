@@ -2,56 +2,108 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { BellIcon, MoonIcon, SunIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { BellIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { Sun, Moon, Monitor, ChevronDown } from 'lucide-react';
 import { useTheme } from '@/contexts';
 
 interface HeaderProps {
   onMobileMenuClick?: () => void;
+  onLogout?: () => void;
 }
 
-export function Header({ onMobileMenuClick }: HeaderProps) {
+export function Header({ onMobileMenuClick, onLogout }: HeaderProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const themeMenuRef = useRef<HTMLDivElement>(null);
 
-  // Fermer le menu profil lors des clics à l'extérieur
+  // Fermer les menus lors des clics à l'extérieur
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
       }
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
+        setIsThemeOpen(false);
+      }
     };
 
-    if (isProfileOpen) {
+    if (isProfileOpen || isThemeOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isProfileOpen]);
+  }, [isProfileOpen, isThemeOpen]);
 
   const toggleTheme = () => {
-    if (theme === 'light') {
-      setTheme('dark');
-    } else if (theme === 'dark') {
-      setTheme('system');
-    } else {
-      setTheme('light');
-    }
+    const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+    setTheme(newTheme);
+  };
+
+  const setThemeDirect = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+    setIsThemeOpen(false);
   };
 
   const getThemeIcon = () => {
-    if (theme === 'system') {
-      return <div className="relative"><SunIcon className="h-4 w-4" /><MoonIcon className="h-3 w-3 absolute -top-1 -right-1" /></div>;
+    switch (theme) {
+      case 'light':
+        return <Sun className="w-5 h-5 text-yellow-500" />;
+      case 'dark':
+        return <Moon className="w-5 h-5 text-blue-400" />;
+      case 'system':
+        return (
+          <div className="relative">
+            <Monitor className="w-5 h-5 text-purple-400" />
+            <Sun className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1" />
+          </div>
+        );
+      default:
+        return <Monitor className="w-5 h-5 text-gray-400" />;
     }
-    return theme === 'dark' ? <SunIcon className="h-6 w-6" /> : <MoonIcon className="h-6 w-6" />;
+  };
+
+  const getThemeLabel = () => {
+    switch (theme) {
+      case 'light':
+        return 'Clair';
+      case 'dark':
+        return 'Sombre';
+      case 'system':
+        return 'Système';
+      default:
+        return 'Thème';
+    }
   };
 
   const getThemeTooltip = () => {
-    if (theme === 'light') return 'Passer en mode sombre';
-    if (theme === 'dark') return 'Suivre les préférences système';
-    return 'Passer en mode clair';
+    switch (theme) {
+      case 'light':
+        return 'Passer en mode sombre';
+      case 'dark':
+        return 'Suivre les préférences système';
+      case 'system':
+        return 'Passer en mode clair';
+      default:
+        return 'Changer de thème';
+    }
+  };
+
+  const handleLogout = async () => {
+    if (isLoggingOut || !onLogout) return;
+    
+    setIsLoggingOut(true);
+    setIsProfileOpen(false); // Close the menu
+    
+    try {
+      await onLogout();
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -80,15 +132,101 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
             <Bars3Icon className="h-6 w-6" aria-hidden="true" />
           </button>
 
-          <button
-            type="button"
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-            onClick={toggleTheme}
-            title={getThemeTooltip()}
-          >
-            <span className="sr-only">{getThemeTooltip()}</span>
-            {getThemeIcon()}
-          </button>
+          {/* Theme Dropdown */}
+          <div className="relative ml-4" ref={themeMenuRef}>
+            <button
+              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              className={`relative p-2 rounded-lg transition-all duration-200 ${
+                theme === 'light'
+                  ? 'bg-yellow-100/20 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-100/30 dark:hover:bg-yellow-900/50'
+                  : theme === 'dark'
+                  ? 'bg-blue-100/20 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100/30 dark:hover:bg-blue-900/50'
+                  : 'bg-purple-100/20 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 hover:bg-purple-100/30 dark:hover:bg-purple-900/50'
+              } hover:scale-110 active:scale-95 shadow-sm`}
+              title={getThemeTooltip()}
+            >
+              <div className="flex items-center space-x-2">
+                <div className="transition-transform duration-200 hover:rotate-12">
+                  {getThemeIcon()}
+                </div>
+                <span className="text-sm font-medium hidden sm:block">
+                  {getThemeLabel()}
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isThemeOpen ? 'rotate-180' : ''}`} />
+              </div>
+
+              {/* Animated background glow */}
+              <div className={`absolute inset-0 rounded-lg transition-opacity duration-300 ${
+                theme === 'light'
+                  ? 'bg-yellow-400/20 shadow-yellow-500/20'
+                  : theme === 'dark'
+                  ? 'bg-blue-400/20 shadow-blue-500/20'
+                  : 'bg-purple-400/20 shadow-purple-500/20'
+              } opacity-0 hover:opacity-100 shadow-lg -z-10`} />
+            </button>
+
+            {/* Theme Dropdown Menu */}
+            {isThemeOpen && (
+              <div className="absolute top-full mt-2 right-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-2 z-50">
+                <button
+                  onClick={() => setThemeDirect('light')}
+                  className={`w-full text-left px-4 py-3 text-sm flex items-center space-x-3 transition-all duration-200 ${
+                    theme === 'light'
+                      ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Sun className="w-5 h-5 text-yellow-500" />
+                  <div>
+                    <div className="font-medium">Mode Clair</div>
+                    <div className="text-xs opacity-70">Thème lumineux</div>
+                  </div>
+                  {theme === 'light' && (
+                    <div className="ml-auto w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setThemeDirect('dark')}
+                  className={`w-full text-left px-4 py-3 text-sm flex items-center space-x-3 transition-all duration-200 ${
+                    theme === 'dark'
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Moon className="w-5 h-5 text-blue-500" />
+                  <div>
+                    <div className="font-medium">Mode Sombre</div>
+                    <div className="text-xs opacity-70">Thème sombre</div>
+                  </div>
+                  {theme === 'dark' && (
+                    <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setThemeDirect('system')}
+                  className={`w-full text-left px-4 py-3 text-sm flex items-center space-x-3 transition-all duration-200 ${
+                    theme === 'system'
+                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="relative">
+                    <Monitor className="w-5 h-5 text-purple-500" />
+                    <Sun className="w-3 h-3 text-yellow-500 absolute -top-1 -right-1" />
+                  </div>
+                  <div>
+                    <div className="font-medium">Mode Système</div>
+                    <div className="text-xs opacity-70">Suit vos préférences</div>
+                  </div>
+                  {theme === 'system' && (
+                    <div className="ml-auto w-2 h-2 bg-purple-500 rounded-full"></div>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
           
           <button
             type="button"
@@ -141,17 +279,26 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
                   Paramètres
                 </Link>
                 <button
-                  onClick={() => {
-                    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                      // TODO: Implement proper logout with Supabase
-                      alert('Déconnexion simulée - Redirection vers la page de connexion')
-                      // router.push('/auth/signin')
-                    }
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                   role="menuitem"
                 >
-                  Déconnexion
+                  {isLoggingOut ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Déconnexion...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Déconnexion
+                    </>
+                  )}
                 </button>
               </div>
             )}
