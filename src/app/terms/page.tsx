@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, FileText, Shield, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, FileText, AlertTriangle } from 'lucide-react'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -26,7 +26,7 @@ export default function TermsPage() {
             </Link>
             <Link href="/" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-2">
               <ArrowLeft className="w-4 h-4" />
-              <span>Retour à l'accueil</span>
+              <span>Retour à l&apos;accueil</span>
             </Link>
           </div>
         </div>
@@ -62,23 +62,23 @@ export default function TermsPage() {
             <div className="prose prose-lg prose-invert max-w-none">
               <h2 className="text-2xl font-bold text-white mb-6">1. Acceptation des conditions</h2>
               <p className="text-gray-300 mb-6">
-                En accédant et en utilisant les services de Gazoduc Invest, vous acceptez d'être lié par les présentes conditions générales d'utilisation.
-                Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services.
+                En accédant et en utilisant les services de Gazoduc Invest, vous acceptez d&apos;être lié par les présentes conditions générales d&apos;utilisation.
+                Si vous n&apos;acceptez pas ces conditions, veuillez ne pas utiliser nos services.
               </p>
 
               <h2 className="text-2xl font-bold text-white mb-6">2. Description des services</h2>
               <p className="text-gray-300 mb-6">
-                Gazoduc Invest fournit une plateforme d'investissement dans les infrastructures de Gaz Naturel Liquéfié (GNL).
-                Nos services incluent la gestion de portefeuille, le suivi des performances et l'accompagnement personnalisé.
+                Gazoduc Invest fournit une plateforme d&apos;investissement dans les infrastructures de Gaz Naturel Liquéfié (GNL).
+                Nos services incluent la gestion de portefeuille, le suivi des performances et l&apos;accompagnement personnalisé.
               </p>
 
-              <h2 className="text-2xl font-bold text-white mb-6">3. Obligations de l'utilisateur</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">3. Obligations de l&apos;utilisateur</h2>
               <p className="text-gray-300 mb-6">
-                Vous vous engagez à fournir des informations exactes et à jour lors de votre inscription.
+                Vous vous engagez à fournir des informations exactes et &agrave; jour lors de votre inscription.
                 Vous êtes responsable de la confidentialité de vos identifiants de connexion.
               </p>
 
-              <h2 className="text-2xl font-bold text-white mb-6">4. Risques d'investissement</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">4. Risques d&apos;investissement</h2>
               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
                 <div className="flex items-start space-x-3">
                   <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
@@ -94,7 +94,7 @@ export default function TermsPage() {
 
               <h2 className="text-2xl font-bold text-white mb-6">5. Propriété intellectuelle</h2>
               <p className="text-gray-300 mb-6">
-                Tous les contenus présents sur la plateforme Gazoduc Invest sont protégés par les droits d'auteur et autres droits de propriété intellectuelle.
+                Tous les contenus présents sur la plateforme Gazoduc Invest sont protégés par les droits d&apos;auteur et autres droits de propriété intellectuelle.
               </p>
 
               <h2 className="text-2xl font-bold text-white mb-6">6. Modification des conditions</h2>

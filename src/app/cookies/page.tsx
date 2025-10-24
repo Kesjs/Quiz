@@ -26,7 +26,7 @@ export default function CookiesPage() {
             </Link>
             <Link href="/" className="text-gray-300 hover:text-white transition-colors flex items-center space-x-2">
               <ArrowLeft className="w-4 h-4" />
-              <span>Retour à l'accueil</span>
+              <span>Retour à l&apos;accueil</span>
             </Link>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function CookiesPage() {
                     Cookies essentiels
                   </h3>
                   <p className="text-green-100/80 text-sm">
-                    Nécessaires au fonctionnement du site. Ils permettent la navigation, l'authentification et la sécurité.
+                    Nécessaires au fonctionnement du site. Ils permettent la navigation, l&apos;authentification et la sécurité.
                     Ces cookies ne peuvent pas être désactivés.
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function CookiesPage() {
                     Cookies de performance
                   </h3>
                   <p className="text-blue-100/80 text-sm">
-                    Nous aident à comprendre comment vous utilisez le site pour l'améliorer.
+                    Nous aident à comprendre comment vous utilisez le site pour l&apos;améliorer.
                     Ils collectent des informations anonymes sur les pages visitées.
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export default function CookiesPage() {
 
               <h2 className="text-2xl font-bold text-white mb-6">Gestion des cookies</h2>
               <p className="text-gray-300 mb-6">
-                Vous pouvez contrôler l'utilisation des cookies de plusieurs manières :
+                Vous pouvez contrôler l&apos;utilisation des cookies de plusieurs manières :
               </p>
 
               <ul className="text-gray-300 mb-6 ml-6 space-y-2">
@@ -129,9 +129,9 @@ export default function CookiesPage() {
                 Les cookies ont différentes durées de vie selon leur type :
               </p>
               <ul className="text-gray-300 mb-6 ml-6 space-y-2">
-                <li>• <strong>Cookies de session</strong> : Supprimés à la fermeture du navigateur</li>
-                <li>• <strong>Cookies persistants</strong> : Jusqu'à 13 mois maximum selon la loi</li>
-                <li>• <strong>Cookies essentiels</strong> : Durée variable selon l'usage</li>
+                <li>• <strong>Cookies de session</strong> : Supprimés &agrave; la fermeture du navigateur</li>
+                <li>• <strong>Cookies persistants</strong> : Jusqu&apos;&agrave; 13 mois maximum selon la loi</li>
+                <li>• <strong>Cookies essentiels</strong> : Durée variable selon l&apos;usage</li>
               </ul>
 
               <h2 className="text-2xl font-bold text-white mb-6">Mises à jour</h2>
@@ -142,11 +142,11 @@ export default function CookiesPage() {
 
               <h2 className="text-2xl font-bold text-white mb-6">Contact</h2>
               <p className="text-gray-300">
-                Pour toute question concernant l'utilisation des cookies :
+                Pour toute question concernant l&apos;utilisation des cookies :
               </p>
               <div className="mt-4 p-4 bg-gray-700/30 rounded-lg">
                 <p className="text-gray-300"><strong>Email :</strong> cookies@gazoducinvest.com</p>
-                <p className="text-gray-300"><strong>Support :</strong> <Link href="/support" className="text-blue-400 hover:underline">Centre d'aide</Link></p>
+                <p className="text-gray-300"><strong>Support :</strong> <Link href="/support" className="text-blue-400 hover:underline">Centre d&apos;aide</Link></p>
               </div>
             </div>
           </motion.div>

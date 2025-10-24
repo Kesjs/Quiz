@@ -131,7 +131,7 @@ export function WithdrawModal({ balance, onConfirm, onClose }: WithdrawModalProp
                     <ul className="text-sm text-yellow-700 dark:text-yellow-300 mt-1 space-y-1">
                       <li>• Les retraits sont traités sous 24-48h</li>
                       <li>• Frais de traitement : 2.5€ (gratuit au-dessus de 500€)</li>
-                      <li>• Vérification d'identité requise pour les gros montants</li>
+                      <li>• Vérification d&apos;identité requise pour les gros montants</li>
                     </ul>
                   </div>
                 </div>

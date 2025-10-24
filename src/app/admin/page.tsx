@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -12,38 +12,7 @@ export default function AdminDashboard() {
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    checkAdminAccess()
-  }, [])
-
-  const checkAdminAccess = async () => {
-    try {
-      const response = await fetch('/api/admin/check')
-      const data = await response.json()
-
-      if (!data.isAdmin) {
-        alert(data.message || 'Accès refusé. Vous n\'êtes pas autorisé à accéder à cette section.')
-        router.push('/dashboard')
-        return
-      }
-
-      // Si c'est un admin, marquer dans localStorage pour les vérifications futures
-      localStorage.setItem('isAdmin', 'true')
-      fetchStats()
-    } catch (error) {
-      console.error('Error checking admin access:', error)
-      alert('Erreur lors de la vérification des droits administrateur.')
-      router.push('/dashboard')
-    }
-  }
-
-  const handleLogout = async () => {
-    localStorage.removeItem('isAdmin')
-    await supabase.auth.signOut()
-    router.push('/admin/login')
-  }
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setError('')
       setLoading(true)
@@ -77,6 +46,37 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false)
     }
+  }, [supabase])
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const response = await fetch('/api/admin/check')
+        const data = await response.json()
+
+        if (!data.isAdmin) {
+          alert(data.message || 'Accès refusé. Vous n\'êtes pas autorisé à accéder à cette section.')
+          router.push('/dashboard')
+          return
+        }
+
+        // Si c'est un admin, marquer dans localStorage pour les vérifications futures
+        localStorage.setItem('isAdmin', 'true')
+        fetchStats()
+      } catch (error) {
+        console.error('Error checking admin access:', error)
+        alert('Erreur lors de la vérification des droits administrateur.')
+        router.push('/dashboard')
+      }
+    }
+
+    checkAdminAccess()
+  }, [fetchStats, router])
+
+  const handleLogout = async () => {
+    localStorage.removeItem('isAdmin')
+    await supabase.auth.signOut()
+    router.push('/admin/login')
   }
 
   if (loading) {

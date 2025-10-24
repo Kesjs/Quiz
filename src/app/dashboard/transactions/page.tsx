@@ -235,7 +235,7 @@ export default function TransactionsPage() {
 
     testConnection();
     fetchTransactions();
-  }, [user, router, fetchTransactions]);
+  }, [user, router, fetchTransactions, supabase]);
 
   // Filtrage et tri des transactions
   const filteredAndSortedTransactions = useMemo(() => {
