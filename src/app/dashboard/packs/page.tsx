@@ -172,37 +172,51 @@ export default function PacksPage() {
   // État pour les conditions
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  // États de chargement pour les boutons
+  const [isProcessingSecurity, setIsProcessingSecurity] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const handleDeposit = async (amount: number, method: string) => {
+    if (isProcessingPayment) return;
+
     // Si un plan est sélectionné, c'est une souscription
     if (selectedPlan) {
-      // Vérifier que le montant correspond au minimum du plan
-      if (amount !== selectedPlan.min_amount) {
-        alert(`Pour souscrire au pack ${selectedPlan.name}, le montant doit être exactement de ${selectedPlan.min_amount}€.`);
-        return;
-      }
+      setIsProcessingPayment(true);
 
-      // Créer la souscription
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          planId: selectedPlan.id,
-          amount: selectedPlan.min_amount
-        }),
-      });
+      try {
+        // Vérifier que le montant correspond au minimum du plan
+        if (amount !== selectedPlan.min_amount) {
+          alert(`Pour souscrire au pack ${selectedPlan.name}, le montant doit être exactement de ${selectedPlan.min_amount}€.`);
+          setIsProcessingPayment(false);
+          return;
+        }
 
-      if (res.ok) {
-        alert(`Souscription au pack ${selectedPlan.name} réussie ! Votre investissement de ${selectedPlan.min_amount}€ provenant de fonds externes a été ajouté à votre solde investi.`);
-        // Rafraîchir les données depuis la base de données
-        await fetchData();
-        // Fermer la modale
-        setShowDepositModal(false);
-        setSelectedPlan(null);
-        // Rediriger vers le dashboard principal pour voir les changements
-        router.push('/dashboard');
-      } else {
-        alert('Erreur lors de la souscription. Veuillez réessayer.');
+        // Créer la souscription
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            planId: selectedPlan.id,
+            amount: selectedPlan.min_amount
+          }),
+        });
+
+        if (res.ok) {
+          alert(`Souscription au pack ${selectedPlan.name} réussie ! Votre investissement de ${selectedPlan.min_amount}€ provenant de fonds externes a été ajouté à votre solde investi.`);
+          // Rafraîchir les données depuis la base de données
+          await fetchData();
+          // Fermer la modale
+          setShowDepositModal(false);
+          setSelectedPlan(null);
+          // Rediriger vers le dashboard principal pour voir les changements
+          router.push('/dashboard');
+        } else {
+          alert('Erreur lors de la souscription. Veuillez réessayer.');
+        }
+      } catch (error) {
+        alert('Erreur réseau. Veuillez réessayer.');
+      } finally {
+        setIsProcessingPayment(false);
       }
     }
   };
@@ -318,8 +332,16 @@ export default function PacksPage() {
     setSelectedPlan(null);
   };
 
-  const handleProceedToPayment = () => {
-    setCurrentPage('payment');
+  const handleProceedToPayment = async () => {
+    if (!acceptTerms || isProcessingSecurity) return;
+
+    setIsProcessingSecurity(true);
+
+    // Simuler un délai pour montrer le feedback visuel
+    setTimeout(() => {
+      setCurrentPage('payment');
+      setIsProcessingSecurity(false);
+    }, 800); // 800ms pour montrer le feedback
   };
 
   const handleBackToSecurity = () => {
@@ -770,9 +792,9 @@ export default function PacksPage() {
                 <div className="pt-6">
                   <Button
                     onClick={handleProceedToPayment}
-                    disabled={!acceptTerms}
+                    disabled={!acceptTerms || isProcessingSecurity}
                     size="lg"
-                    className={`w-full py-4 text-lg font-semibold text-white transition-opacity duration-200 ${
+                    className={`w-full py-4 text-lg font-semibold text-white transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       acceptTerms ? 'opacity-90 hover:opacity-100' : 'opacity-60'
                     } ${
                       selectedPlan.id === 'starter' ? 'bg-blue-600 hover:bg-blue-700' :
@@ -781,7 +803,14 @@ export default function PacksPage() {
                       'bg-orange-600 hover:bg-orange-700'
                     }`}
                   >
-                    Confirmer et procéder au paiement - {selectedPlan.min_amount}€
+                    {isProcessingSecurity ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                        Traitement en cours...
+                      </div>
+                    ) : (
+                      `Confirmer et procéder au paiement - ${selectedPlan.min_amount}€`
+                    )}
                   </Button>
                   {!acceptTerms && (
                     <p className="text-xs text-center text-red-500 mt-2">
@@ -893,13 +922,23 @@ export default function PacksPage() {
                 <div className="pt-6">
                   <Button
                     onClick={() => handleDeposit(selectedPlan.min_amount, 'card')}
+                    disabled={isProcessingPayment}
                     size="lg"
-                    className={`w-full py-4 text-lg font-semibold ${selectedPlan.id === 'starter' ? 'bg-blue-600 hover:bg-blue-700' :
+                    className={`w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
+                      selectedPlan.id === 'starter' ? 'bg-blue-600 hover:bg-blue-700' :
                       selectedPlan.id === 'premium' ? 'bg-emerald-600 hover:bg-emerald-700' :
                       selectedPlan.id === 'elite' ? 'bg-purple-600 hover:bg-purple-700' :
-                      'bg-orange-600 hover:bg-orange-700'}`}
+                      'bg-orange-600 hover:bg-orange-700'
+                    }`}
                   >
-                    Payer {selectedPlan.min_amount}€ et activer mon pack {selectedPlan.name}
+                    {isProcessingPayment ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                        Traitement du paiement...
+                      </div>
+                    ) : (
+                      `Payer ${selectedPlan.min_amount}€ et activer mon pack ${selectedPlan.name}`
+                    )}
                   </Button>
                   <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
                     En procédant au paiement, vous acceptez nos conditions générales d&apos;utilisation.
