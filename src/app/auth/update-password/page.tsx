@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Lock, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useLoadingWithDelay } from '@/hooks/useLoadingWithDelay'
 
-export default function UpdatePassword() {
+// Wrapper component for useSearchParams
+function UpdatePasswordForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -227,5 +228,22 @@ export default function UpdatePassword() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function UpdatePassword() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-gray-700/50 p-8">
+          <div className="text-center">
+            <Loader2 className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" />
+            <p className="text-gray-400">Chargement...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <UpdatePasswordForm />
+    </Suspense>
   )
 }

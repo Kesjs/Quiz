@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -9,7 +9,8 @@ import { SocialButtons } from '@/components/auth/SocialButtons'
 import { motion } from 'framer-motion'
 import { useLoadingWithDelay } from '@/hooks/useLoadingWithDelay'
 
-export default function SignIn() {
+// Wrapper component for useSearchParams
+function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -330,5 +331,22 @@ export default function SignIn() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden border border-gray-700/50 p-8">
+          <div className="text-center">
+            <Loader2 className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" />
+            <p className="text-gray-400">Chargement...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   )
 }
