@@ -175,6 +175,9 @@ export default function PacksPage() {
   // États de chargement pour les boutons
   const [isProcessingSecurity, setIsProcessingSecurity] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  // État pour la méthode de paiement sélectionnée
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [selectedCrypto, setSelectedCrypto] = useState<string | null>(null);
 
   const handleDeposit = async (amount: number, method: string) => {
     if (isProcessingPayment) return;
@@ -866,63 +869,168 @@ export default function PacksPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-8 space-y-6">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900 dark:text-white">Montant total à payer :</span>
-                    <span className="text-2xl font-bold text-blue-600">{selectedPlan.min_amount}€</span>
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="text-center">
+                    <span className="font-medium text-gray-900 dark:text-white">Montant à investir :</span>
+                    <div className="text-3xl font-bold text-gray-600 dark:text-gray-300 mt-2">{selectedPlan.min_amount}€</div>
                   </div>
                 </div>
 
                 {/* Méthodes de paiement */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Choisissez votre méthode de paiement</h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    <button className="flex items-center p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                      <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
-                        <span className="text-white font-bold text-lg">💳</span>
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* Carte bancaire */}
+                    <button
+                      onClick={() => {
+                        setSelectedPaymentMethod('card');
+                        setSelectedCrypto(null);
+                      }}
+                      className={`flex items-center p-4 border-2 rounded-lg transition-all ${
+                        selectedPaymentMethod === 'card'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                      }`}
+                    >
+                      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-4">
+                        <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
                       </div>
-                      <div className="text-left">
-                        <div className="font-semibold text-gray-900 dark:text-white">Carte bancaire</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Visa, Mastercard, American Express</div>
+                      <div className="text-left flex-1">
+                        <div className="font-medium text-gray-900 dark:text-white">Carte bancaire</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Visa, Mastercard, American Express</div>
                       </div>
-                      <div className="ml-auto">
-                        <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      </div>
+                      {selectedPaymentMethod === 'card' && (
+                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
                     </button>
 
-                    <button className="flex items-center p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                      <div className="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center mr-4">
-                        <span className="text-white font-bold text-lg">P</span>
+                    {/* PayPal */}
+                    <button
+                      onClick={() => {
+                        setSelectedPaymentMethod('paypal');
+                        setSelectedCrypto(null);
+                      }}
+                      className={`flex items-center p-4 border-2 rounded-lg transition-all ${
+                        selectedPaymentMethod === 'paypal'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                      }`}
+                    >
+                      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-4">
+                        <span className="text-blue-600 font-bold text-sm">P</span>
                       </div>
-                      <div className="text-left">
-                        <div className="font-semibold text-gray-900 dark:text-white">PayPal</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Paiement rapide et sécurisé</div>
+                      <div className="text-left flex-1">
+                        <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Paiement rapide et sécurisé</div>
                       </div>
-                      <div className="ml-auto">
-                        <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      </div>
+                      {selectedPaymentMethod === 'paypal' && (
+                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
                     </button>
 
-                    <button className="flex items-center p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                      <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mr-4">
-                        <span className="text-white font-bold text-lg">₿</span>
+                    {/* Cryptomonnaies */}
+                    <button
+                      onClick={() => setSelectedPaymentMethod('crypto')}
+                      className={`flex items-center p-4 border-2 rounded-lg transition-all ${
+                        selectedPaymentMethod === 'crypto'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                      }`}
+                    >
+                      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-4">
+                        <span className="text-orange-500 font-bold text-lg">₿</span>
                       </div>
-                      <div className="text-left">
-                        <div className="font-semibold text-gray-900 dark:text-white">Cryptomonnaies</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Bitcoin, Ethereum, autres</div>
+                      <div className="text-left flex-1">
+                        <div className="font-medium text-gray-900 dark:text-white">Cryptomonnaies</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Bitcoin, USDT (ERC20)</div>
                       </div>
-                      <div className="ml-auto">
-                        <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      </div>
+                      {selectedPaymentMethod === 'crypto' && (
+                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
                     </button>
+
+                    {/* Sélection des cryptos si crypto est sélectionné */}
+                    {selectedPaymentMethod === 'crypto' && (
+                      <div className="ml-6 space-y-2 mt-3">
+                        <button
+                          onClick={() => setSelectedCrypto('btc')}
+                          className={`w-full flex items-center p-3 border rounded-lg transition-all ${
+                            selectedCrypto === 'btc'
+                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-orange-400'
+                          }`}
+                        >
+                          <span className="text-orange-500 font-bold mr-3">₿</span>
+                          <span className="font-medium text-gray-900 dark:text-white">Bitcoin (BTC)</span>
+                          {selectedCrypto === 'btc' && (
+                            <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center ml-auto">
+                              <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setSelectedCrypto('usdt')}
+                          className={`w-full flex items-center p-3 border rounded-lg transition-all ${
+                            selectedCrypto === 'usdt'
+                              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-green-400'
+                          }`}
+                        >
+                          <span className="text-green-500 font-bold mr-3">T</span>
+                          <span className="font-medium text-gray-900 dark:text-white">Tether (USDT)</span>
+                          {selectedCrypto === 'usdt' && (
+                            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center ml-auto">
+                              <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Affichage de l'adresse si crypto sélectionnée */}
+                    {selectedCrypto && (
+                      <div className="ml-6 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                          Adresse {selectedCrypto === 'btc' ? 'Bitcoin' : 'USDT (ERC20)'} :
+                        </h4>
+                        <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-600 font-mono text-sm break-all">
+                          {selectedCrypto === 'btc'
+                            ? 'bc1q0ulp4sauly9sahsq7jswy94ane0ev9ksjtvpzn'
+                            : '0x63eF5b765D8d408274172804D31fB0a2Ea5416c0'
+                          }
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          Envoyez exactement {selectedPlan.min_amount}€ en {selectedCrypto === 'btc' ? 'BTC' : 'USDT'} à cette adresse.
+                          Votre pack sera activé automatiquement après confirmation de la transaction.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Bouton de paiement */}
                 <div className="pt-6">
                   <Button
-                    onClick={() => handleDeposit(selectedPlan.min_amount, 'card')}
-                    disabled={isProcessingPayment}
+                    onClick={() => handleDeposit(selectedPlan.min_amount, selectedPaymentMethod || 'card')}
+                    disabled={isProcessingPayment || !selectedPaymentMethod || (selectedPaymentMethod === 'crypto' && !selectedCrypto)}
                     size="lg"
                     className={`w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
                       selectedPlan.id === 'starter' ? 'bg-blue-600 hover:bg-blue-700' :
@@ -940,6 +1048,11 @@ export default function PacksPage() {
                       `Payer ${selectedPlan.min_amount}€ et activer mon pack ${selectedPlan.name}`
                     )}
                   </Button>
+                  {(!selectedPaymentMethod || (selectedPaymentMethod === 'crypto' && !selectedCrypto)) && (
+                    <p className="text-xs text-center text-red-500 mt-2">
+                      Veuillez sélectionner une méthode de paiement
+                    </p>
+                  )}
                   <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
                     En procédant au paiement, vous acceptez nos conditions générales d&apos;utilisation.
                   </p>

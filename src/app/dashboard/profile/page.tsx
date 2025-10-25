@@ -623,7 +623,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Badges et Réalisations */}
-          <Card className="border border-gray-200 dark:border-gray-700">
+          {/* <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <span className="text-yellow-500 mr-2">🏆</span>
@@ -653,7 +653,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Statistiques */}
           <Card className="border border-gray-200 dark:border-gray-700">
