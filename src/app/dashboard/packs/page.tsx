@@ -797,14 +797,7 @@ export default function PacksPage() {
                     onClick={handleProceedToPayment}
                     disabled={!acceptTerms || isProcessingSecurity}
                     size="lg"
-                    className={`w-full py-4 text-lg font-semibold text-white transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      acceptTerms ? 'opacity-90 hover:opacity-100' : 'opacity-60'
-                    } ${
-                      selectedPlan.id === 'starter' ? 'bg-blue-600 hover:bg-blue-700' :
-                      selectedPlan.id === 'premium' ? 'bg-emerald-600 hover:bg-emerald-700' :
-                      selectedPlan.id === 'elite' ? 'bg-purple-600 hover:bg-purple-700' :
-                      'bg-orange-600 hover:bg-orange-700'
-                    }`}
+                    className="w-full py-4 text-lg font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     {isProcessingSecurity ? (
                       <div className="flex items-center justify-center">
@@ -877,9 +870,11 @@ export default function PacksPage() {
                 </div>
 
                 {/* Méthodes de paiement */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Choisissez votre méthode de paiement</h3>
-                  <div className="grid grid-cols-1 gap-3">
+
+                  {/* Première ligne : Carte bancaire et PayPal */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Carte bancaire */}
                     <button
                       onClick={() => {
@@ -899,7 +894,7 @@ export default function PacksPage() {
                       </div>
                       <div className="text-left flex-1">
                         <div className="font-medium text-gray-900 dark:text-white">Carte bancaire</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Visa, Mastercard, American Express</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Visa, Mastercard</div>
                       </div>
                       {selectedPaymentMethod === 'card' && (
                         <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -927,7 +922,7 @@ export default function PacksPage() {
                       </div>
                       <div className="text-left flex-1">
                         <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Paiement rapide et sécurisé</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Paiement rapide</div>
                       </div>
                       {selectedPaymentMethod === 'paypal' && (
                         <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -937,8 +932,10 @@ export default function PacksPage() {
                         </div>
                       )}
                     </button>
+                  </div>
 
-                    {/* Cryptomonnaies */}
+                  {/* Deuxième ligne : Cryptomonnaies */}
+                  <div className="grid grid-cols-1 gap-4">
                     <button
                       onClick={() => setSelectedPaymentMethod('crypto')}
                       className={`flex items-center p-4 border-2 rounded-lg transition-all ${
@@ -952,7 +949,7 @@ export default function PacksPage() {
                       </div>
                       <div className="text-left flex-1">
                         <div className="font-medium text-gray-900 dark:text-white">Cryptomonnaies</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Bitcoin, USDT (ERC20)</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Bitcoin, Tether (USDT)</div>
                       </div>
                       {selectedPaymentMethod === 'crypto' && (
                         <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -962,13 +959,16 @@ export default function PacksPage() {
                         </div>
                       )}
                     </button>
+                  </div>
 
-                    {/* Sélection des cryptos si crypto est sélectionné */}
-                    {selectedPaymentMethod === 'crypto' && (
-                      <div className="ml-6 space-y-2 mt-3">
+                  {/* Sélection des cryptos si crypto est sélectionné */}
+                  {selectedPaymentMethod === 'crypto' && (
+                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-3">Choisissez votre cryptomonnaie</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <button
                           onClick={() => setSelectedCrypto('btc')}
-                          className={`w-full flex items-center p-3 border rounded-lg transition-all ${
+                          className={`flex items-center p-3 border rounded-lg transition-all ${
                             selectedCrypto === 'btc'
                               ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-orange-400'
@@ -986,7 +986,7 @@ export default function PacksPage() {
                         </button>
                         <button
                           onClick={() => setSelectedCrypto('usdt')}
-                          className={`w-full flex items-center p-3 border rounded-lg transition-all ${
+                          className={`flex items-center p-3 border rounded-lg transition-all ${
                             selectedCrypto === 'usdt'
                               ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-400'
@@ -1003,28 +1003,27 @@ export default function PacksPage() {
                           )}
                         </button>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Affichage de l'adresse si crypto sélectionnée */}
-                    {selectedCrypto && (
-                      <div className="ml-6 mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                          Adresse {selectedCrypto === 'btc' ? 'Bitcoin' : 'USDT (ERC20)'} :
-                        </h4>
-                        <div className="bg-white dark:bg-gray-900 p-3 rounded border border-gray-300 dark:border-gray-600 font-mono text-sm break-all">
-                          {selectedCrypto === 'btc'
-                            ? 'bc1q0ulp4sauly9sahsq7jswy94ane0ev9ksjtvpzn'
-                            : '0x63eF5b765D8d408274172804D31fB0a2Ea5416c0'
-                          }
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Envoyez exactement {selectedPlan.min_amount}€ en {selectedCrypto === 'btc' ? 'BTC' : 'USDT'} à cette adresse.
-                          Votre pack sera activé automatiquement après confirmation de la transaction.
-                        </p>
+                  {/* Affichage de l'adresse si crypto sélectionnée */}
+                  {selectedCrypto && (
+                    <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                        Adresse {selectedCrypto === 'btc' ? 'Bitcoin' : 'USDT (ERC20)'} :
+                      </h4>
+                      <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded border font-mono text-sm break-all">
+                        {selectedCrypto === 'btc'
+                          ? 'bc1q0ulp4sauly9sahsq7jswy94ane0ev9ksjtvpzn'
+                          : '0x63eF5b765D8d408274172804D31fB0a2Ea5416c0'
+                        }
                       </div>
-                    )}
-                  </div>
-                </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        Envoyez exactement {selectedPlan.min_amount}€ en {selectedCrypto === 'btc' ? 'BTC' : 'USDT'} à cette adresse.
+                        Votre pack sera activé automatiquement après confirmation de la transaction.
+                      </p>
+                    </div>
+                  )}
 
                 {/* Bouton de paiement */}
                 <div className="pt-6">
@@ -1032,12 +1031,7 @@ export default function PacksPage() {
                     onClick={() => handleDeposit(selectedPlan.min_amount, selectedPaymentMethod || 'card')}
                     disabled={isProcessingPayment || !selectedPaymentMethod || (selectedPaymentMethod === 'crypto' && !selectedCrypto)}
                     size="lg"
-                    className={`w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
-                      selectedPlan.id === 'starter' ? 'bg-blue-600 hover:bg-blue-700' :
-                      selectedPlan.id === 'premium' ? 'bg-emerald-600 hover:bg-emerald-700' :
-                      selectedPlan.id === 'elite' ? 'bg-purple-600 hover:bg-purple-700' :
-                      'bg-orange-600 hover:bg-orange-700'
-                    }`}
+                    className="w-full py-4 text-lg font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     {isProcessingPayment ? (
                       <div className="flex items-center justify-center">
