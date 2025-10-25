@@ -18,6 +18,7 @@ function SignUpForm() {
   const [errorTimestamp, setErrorTimestamp] = useState<number | null>(null)
   const [success, setSuccess] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+  const [resendEmail, setResendEmail] = useState('')
   const [resendLoading, setResendLoading] = useState(false)
   const [resendSuccess, setResendSuccess] = useState(false)
   const [formErrors, setFormErrors] = useState<{email?: string, password?: string, fullName?: string}>({})
@@ -29,6 +30,15 @@ function SignUpForm() {
   const { loading, startLoading, stopLoading } = useLoadingWithDelay({
     minDelay: 1200, // Délai minimum légèrement plus long pour l'inscription
   })
+
+  // Effet pour charger l'email depuis localStorage au montage
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('signup_email')
+    if (savedEmail) {
+      setEmail(savedEmail)
+      setResendEmail(savedEmail)
+    }
+  }, [])
 
   // Effet pour nettoyer les erreurs après un délai minimum
   useEffect(() => {
@@ -59,6 +69,12 @@ function SignUpForm() {
   }, [formErrorsTimestamp, formErrors])
 
   const handleResendVerification = async () => {
+    const emailToUse = resendEmail || email
+    if (!emailToUse || !/\S+@\S+\.\S+/.test(emailToUse)) {
+      setError('Veuillez saisir une adresse email valide.')
+      return
+    }
+
     setResendLoading(true)
     setResendSuccess(false)
     setError('')
@@ -66,7 +82,7 @@ function SignUpForm() {
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email,
+        email: emailToUse,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -174,6 +190,8 @@ function SignUpForm() {
         await stopLoading(false)
       } else {
         setEmailSent(true)
+        setResendEmail(email.trim())
+        localStorage.setItem('signup_email', email.trim())
         setSuccess('Inscription réussie ! Un email de vérification a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour activer votre compte.')
         await stopLoading(false)
       }
@@ -228,6 +246,28 @@ function SignUpForm() {
               <p>Cliquez sur le lien dans l&apos;email pour confirmer votre inscription.</p>
               <p className="mt-2">Si vous ne voyez pas l&apos;email, vérifiez votre dossier de courrier indésirable.</p>
             </div>
+
+            {!resendEmail && (
+              <div className="mt-4">
+                <label htmlFor="resendEmail" className="block text-sm font-medium text-gray-300 mb-2">
+                  Adresse email pour renvoyer la vérification
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <input
+                    id="resendEmail"
+                    name="resendEmail"
+                    type="email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    className="bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 rounded-lg block w-full pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="votre@email.com"
+                  />
+                </div>
+              </div>
+            )}
             
             <motion.button
               onClick={handleResendVerification}

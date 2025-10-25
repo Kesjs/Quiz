@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Loader2, BarChart3, ArrowUp as ArrowPathIcon } from 'lucide-react'
 import { useAuth } from '@/contexts'
@@ -17,7 +17,9 @@ export default function GlassNavbar() {
   const [isLoadingSignup, setIsLoadingSignup] = useState(false)
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [fromLanding, setFromLanding] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
 
   // Get user display name
@@ -50,6 +52,10 @@ export default function GlassNavbar() {
       }
     }
 
+    // Détecter si on vient de la landing page
+    const fromParam = searchParams.get('from')
+    setFromLanding(fromParam === 'landing')
+
     checkAuth()
 
     // Gestion du défilement
@@ -62,7 +68,7 @@ export default function GlassNavbar() {
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [scrolled])
+  }, [scrolled, searchParams])
 
   const handleDashboardNavigation = async () => {
     if (isLoadingDashboard) return // Prevent multiple clicks
@@ -250,9 +256,16 @@ export default function GlassNavbar() {
                               {getUserDisplayName().charAt(0).toUpperCase()}
                             </span>
                           </div>
-                          <span className="text-white text-sm font-medium">
-                            {getUserDisplayName()}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-white text-sm font-medium">
+                              {getUserDisplayName()}
+                            </span>
+                            {fromLanding && (
+                              <span className="text-xs text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-full">
+                                Via landing
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 

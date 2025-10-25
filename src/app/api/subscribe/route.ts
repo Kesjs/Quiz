@@ -17,12 +17,8 @@ export async function POST(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Insert transaction
-  await supabase.from('transactions').insert({
-    user_id: user.id,
-    type: 'subscription',
-    amount: -amount, // debit
-  })
+  // Note: Pas de transaction négative car l'investissement vient de fonds externes
+  // Le solde investi sera calculé directement depuis les souscriptions actives
 
   return NextResponse.json({ success: true, subscription: data[0] })
 }

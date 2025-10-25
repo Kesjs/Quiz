@@ -3,51 +3,31 @@
 import { motion } from 'framer-motion';
 import { TrendingUp, Zap, Award, Flame } from 'lucide-react';
 import { useState } from 'react';
-import { DepositModal } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 const PricingSection = () => {
-  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const router = useRouter();
   const { user } = useAuth();
 
-  const handleDeposit = async (amount: number, method: string) => {
-    // Vérifier à nouveau si l'utilisateur est connecté avant de procéder
-    if (!user) {
-      router.push('/auth/signin?message=Veuillez-vous-connecter-pour-effectuer-un-dépôt');
-      return;
-    }
+  const handlePlanSelect = (planPrice: number, planName: string) => {
+    if (loadingPlan) return; // Prevent multiple clicks
 
-    try {
-      const res = await fetch('/api/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, method }),
-      })
-      if (res.ok) {
-        alert(`Demande de dépôt de $${amount} via ${method.toUpperCase()} enregistrée. Vous recevrez une confirmation par email.`)
-        // Fermer le modal après succès
-        setDepositModalOpen(false);
-      } else {
-        alert('Erreur lors du traitement du dépôt')
-      }
-    } catch (error) {
-      alert('Erreur réseau. Veuillez réessayer.')
-    }
-  }
-
-  const handlePlanSelect = (planPrice: number) => {
     if (!user) {
       // Rediriger vers la page d'inscription si l'utilisateur n'est pas connecté
       router.push('/auth/signup?message=Veuillez-vous-inscrire-pour-commencer-vos-investissements');
       return;
     }
 
-    // Ouvrir le modal de dépôt si l'utilisateur est connecté
-    setDepositModalOpen(true);
-    // Ici on pourrait pré-remplir le montant avec le prix du plan sélectionné
-    // mais pour l'instant on laisse l'utilisateur entrer le montant manuellement
+    // Démarrer le chargement pour ce plan spécifique
+    setLoadingPlan(planName);
+
+    // Délai pour montrer le feedback visuel
+    setTimeout(() => {
+      // Si l'utilisateur est connecté, rediriger vers le dashboard des packs avec le plan spécifique
+      router.push(`/dashboard/packs?from=landing&plan=${planPrice}`);
+    }, 500); // 500ms pour montrer le feedback
   }
 
   const fadeInUp = {
@@ -212,14 +192,22 @@ const PricingSection = () => {
                   </div>
 
                   <button
-                    onClick={() => handlePlanSelect(plan.price)}
-                    className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                    onClick={() => handlePlanSelect(plan.price, plan.name)}
+                    disabled={!!loadingPlan}
+                    className={`w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 ${
                       plan.popular
                         ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                         : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    Souscrire {plan.name}
+                    {loadingPlan === plan.name ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Redirection...
+                      </div>
+                    ) : (
+                      `Souscrire ${plan.name}`
+                    )}
                   </button>
                 </div>
               </motion.div>
@@ -237,13 +225,6 @@ const PricingSection = () => {
           <p>Vous avez besoin d&apos;une solution personnalisée ? <a href="#contact" className="text-blue-300 hover:underline">Contactez-nous</a></p>
         </motion.div>
       </div>
-
-      {/* Modal de dépôt */}
-      <DepositModal
-        isOpen={depositModalOpen}
-        onClose={() => setDepositModalOpen(false)}
-        onDeposit={handleDeposit}
-      />
     </section>
   );
 };

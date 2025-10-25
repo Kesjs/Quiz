@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import { Sidebar } from '@/components/dashboard/Sidebar';
@@ -19,27 +19,58 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const supabase = createClient();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
+  const checkAuth = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
 
-        if (!session?.user) {
-          // No session, redirect to signin
-          router.push('/auth/signin');
-          return;
-        }
-
-        // User is authenticated, allow access
-        setIsAuthenticating(false);
-      } catch (error) {
-        console.error('Auth check error:', error);
+      if (!session?.user) {
+        // No session, redirect to signin
         router.push('/auth/signin');
+        return;
       }
-    };
 
+      // Check if user has active subscriptions
+      const { data: subscriptions, error: subError } = await supabase
+        .from('subscriptions')
+        .select('id, status, end_date')
+        .eq('user_id', session.user.id)
+        .eq('status', 'active')
+        .gt('end_date', new Date().toISOString()); // Not expired (strictly greater than now)
+
+      if (subError) {
+        console.error('Error checking subscriptions:', subError);
+        // On error, allow access to avoid blocking users
+        setIsAuthenticating(false);
+        return;
+      }
+
+      const hasActiveSubscriptions = subscriptions && subscriptions.length > 0;
+      const allowedPaths = ['/dashboard/packs', '/dashboard/support'];
+      const isOnAllowedPath = allowedPaths.includes(pathname);
+
+      // If no active subscriptions and not on allowed path, redirect to packs
+      if (!hasActiveSubscriptions && !isOnAllowedPath) {
+        router.push('/dashboard/packs');
+        return;
+      }
+
+      // If has subscriptions but on packs page, redirect to main dashboard
+      if (hasActiveSubscriptions && pathname === '/dashboard/packs') {
+        router.push('/dashboard');
+        return;
+      }
+
+      // User is authenticated and can access current page
+      setIsAuthenticating(false);
+    } catch (error) {
+      console.error('Auth check error:', error);
+      router.push('/auth/signin');
+    }
+  }, [router, supabase, pathname]);
+
+  useEffect(() => {
     checkAuth();
-  }, [router, supabase.auth]);
+  }, [checkAuth]);
 
   const handleLogout = async () => {
     try {

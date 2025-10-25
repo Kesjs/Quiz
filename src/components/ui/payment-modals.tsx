@@ -17,6 +17,7 @@ interface WithdrawModalProps {
   onClose: () => void
   onWithdraw: (amount: number, method: string) => void
   maxAmount: number
+  minimumAmount?: number
 }
 
 export function DepositModal({ isOpen, onClose, onDeposit }: DepositModalProps) {
@@ -292,7 +293,7 @@ export function DepositModal({ isOpen, onClose, onDeposit }: DepositModalProps) 
   )
 }
 
-export function WithdrawModal({ isOpen, onClose, onWithdraw, maxAmount }: WithdrawModalProps) {
+export function WithdrawModal({ isOpen, onClose, onWithdraw, maxAmount, minimumAmount }: WithdrawModalProps) {
   const [selectedMethod, setSelectedMethod] = useState<'bank' | 'btc' | 'usdt'>('bank')
   const [amount, setAmount] = useState('')
 
@@ -328,7 +329,8 @@ export function WithdrawModal({ isOpen, onClose, onWithdraw, maxAmount }: Withdr
 
   const handleSubmit = () => {
     const numAmount = parseFloat(amount)
-    if (numAmount > 0 && numAmount <= maxAmount) {
+    const minAmount = minimumAmount || 0
+    if (numAmount >= minAmount && numAmount <= maxAmount) {
       onWithdraw(numAmount, selectedMethod)
       setAmount('')
       onClose()
@@ -369,10 +371,16 @@ export function WithdrawModal({ isOpen, onClose, onWithdraw, maxAmount }: Withdr
         <div className="p-6">
           {/* Solde disponible */}
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Solde disponible:</span>
               <span className="text-lg font-bold text-blue-800 dark:text-blue-200">${maxAmount.toFixed(2)}</span>
             </div>
+            {minimumAmount && minimumAmount > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-orange-700 dark:text-orange-300">Minimum retrait:</span>
+                <span className="text-lg font-bold text-orange-800 dark:text-orange-200">${minimumAmount.toFixed(2)}</span>
+              </div>
+            )}
           </div>
 
           {/* Méthodes de retrait */}
@@ -420,14 +428,21 @@ export function WithdrawModal({ isOpen, onClose, onWithdraw, maxAmount }: Withdr
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="pl-8"
-                min="0"
+                min={minimumAmount || 0}
                 max={maxAmount}
                 step="0.01"
               />
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Maximum: ${maxAmount.toFixed(2)}
-            </p>
+            <div className="flex justify-between items-center mt-1">
+              {minimumAmount && minimumAmount > 0 && (
+                <p className="text-xs text-orange-600 dark:text-orange-400">
+                  Minimum: ${minimumAmount.toFixed(2)}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Maximum: ${maxAmount.toFixed(2)}
+              </p>
+            </div>
           </div>
 
           {/* Actions */}
@@ -437,7 +452,7 @@ export function WithdrawModal({ isOpen, onClose, onWithdraw, maxAmount }: Withdr
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxAmount}
+              disabled={!amount || parseFloat(amount) < (minimumAmount || 0) || parseFloat(amount) > maxAmount}
               className="flex-1 bg-red-600 hover:bg-red-700"
             >
               Confirmer le retrait

@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { DepositModal, WithdrawModal } from '@/components/ui'
-import { useDashboardOnboarding } from '@/hooks/useDashboardOnboarding'
-import { OnboardingModal } from '@/components/OnboardingModal'
 import { useCachedPlans } from '@/hooks/useCachedPlans'
 import {
   User,
@@ -62,31 +60,67 @@ export default function Dashboard() {
 
   const TRANSACTIONS_PER_PAGE = 20
 
-  // Mémoriser les calculs coûteux
-  const activeSubscriptionsCount = useMemo(() =>
-    subscriptions.filter(s => s.status === 'active').length,
+  // Hook pour les plans mis en cache (doit être avant les calculs qui utilisent plans)
+  const { plans, loading: plansLoading } = useCachedPlans()
+
+  // Calculer les soldes
+  const investedBalance = useMemo(() =>
+    subscriptions
+      .filter(s => s.status === 'active')
+      .reduce((total, sub) => total + sub.amount, 0),
     [subscriptions]
   )
 
-  const transactionStats = useMemo(() => ({
-    total: transactions.length,
-    hasMore: hasMoreTransactions
-  }), [transactions.length, hasMoreTransactions])
+  const evolvingBalance = useMemo(() => {
+    if (!plans || plans.length === 0) return 0;
 
-  // Hook d'onboarding
-  const {
-    isActive: onboardingActive,
-    isCompleted: onboardingCompleted,
-    currentStep,
-    steps,
-    handleNext,
-    handleComplete,
-    handleSkip,
-    resetOnboarding
-  } = useDashboardOnboarding(subscriptions.length > 0)
+    return subscriptions
+      .filter(s => s.status === 'active')
+      .reduce((total, sub) => {
+        const plan = plans.find(p => p.id === sub.plan_id)
+        if (!plan) return total
 
-  // Hook pour les plans mis en cache
-  const { plans, loading: plansLoading } = useCachedPlans()
+        const startDate = new Date(sub.start_date)
+        const now = new Date()
+        const daysElapsed = Math.max(0, Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
+
+        if (daysElapsed > 0) {
+          const earnings = daysElapsed * plan.daily_profit
+          return total + earnings
+        }
+        return total
+      }, 0)
+  }, [subscriptions, plans])
+
+  // Déterminer le montant minimum pour le retrait selon les packs actifs
+  const getMinimumWithdrawal = useMemo(() => {
+    if (!plans || plans.length === 0) return 0;
+
+    const activePlans = subscriptions
+      .filter(s => s.status === 'active')
+      .map(s => plans.find(p => p.id === s.plan_id))
+      .filter(Boolean)
+
+    // Logique pour déterminer le minimum selon les packs actifs
+    // Utilise l'option 1 (25%) par défaut comme demandé, arrondie
+    const minAmounts = activePlans.map(plan => {
+      if (!plan) return 0
+      switch (plan.min_amount) {
+        case 100: return 25 // Starter
+        case 225: return 50 // Premium (arrondi de 56.25)
+        case 999: return 200 // Elite (arrondi de 249.75)
+        case 1999: return 400 // Élite (arrondi de 499.75)
+        default: return 0
+      }
+    })
+
+    return Math.max(...minAmounts, 0)
+  }, [subscriptions, plans])
+
+  const minimumWithdrawal = getMinimumWithdrawal
+  const canWithdraw = evolvingBalance >= minimumWithdrawal
+
+  // Ancienne position du hook useCachedPlans (maintenant déplacé plus haut)
 
   // Charger le profil utilisateur
   const fetchProfile = useCallback(async () => {
@@ -252,13 +286,25 @@ export default function Dashboard() {
 
   const handleWithdraw = async (amount: number, method: string) => {
     try {
+      // Vérifier que le montant demandé respecte le minimum
+      if (amount < minimumWithdrawal) {
+        alert(`Le montant minimum de retrait est de $${minimumWithdrawal.toFixed(2)} pour vos packs actifs.`)
+        return
+      }
+
+      // Vérifier que le montant demandé ne dépasse pas le solde évolutif disponible
+      if (amount > evolvingBalance) {
+        alert(`Le montant demandé dépasse votre solde évolutif disponible ($${evolvingBalance.toFixed(2)}).`)
+        return
+      }
+
       const res = await fetch('/api/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount, method }),
       })
       if (res.ok) {
-        alert(`Demande de retrait de $${amount} via ${method.toUpperCase()} enregistrée. Le traitement peut prendre quelques minutes.`)
+        alert(`Demande de retrait de $${amount} depuis votre solde évolutif enregistrée. Le traitement peut prendre quelques minutes.`)
         fetchData()
       } else {
         alert('Erreur lors du traitement du retrait')
@@ -305,72 +351,92 @@ export default function Dashboard() {
                   Gérez vos investissements dans le GNL et suivez vos performances en temps réel
                 </p>
               </div>
-              {/* Bouton de test pour réinitialiser l'onboarding */}
-              {process.env.NODE_ENV === 'development' && (
-                <button
-                  onClick={resetOnboarding}
-                  className="text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600 transition-colors"
-                >
-                  Reset Onboarding
-                </button>
-              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 balance-card group cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-green-200 dark:hover:border-green-600">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+            {/* Solde Investi (Statique) */}
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 balance-card border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Solde disponible</h3>
-                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
-                  <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Solde Investi</h3>
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+                  <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
-              <p className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400 mb-1">${balance.toFixed(2)}</p>
+              <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">${investedBalance.toFixed(2)}</p>
               <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Montant disponible pour investir ou retirer
+                Montant total investi dans vos packs actifs
               </p>
-              <div className="flex gap-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1 mb-1">
+                  <Shield className="w-3 h-3" />
+                  <span>Capital sécurisé</span>
+                </div>
+                <div className="text-xs text-gray-400 dark:text-gray-500">
+                  {subscriptions.filter(s => s.status === 'active').length} pack{subscriptions.filter(s => s.status === 'active').length > 1 ? 's' : ''} actif{subscriptions.filter(s => s.status === 'active').length > 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+
+            {/* Solde Évolutif (Gains) */}
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 balance-card border border-gray-100 dark:border-gray-700 hover:border-green-200 dark:hover:border-green-600">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Solde Évolutif</h3>
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
+                  <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400 mb-1">${evolvingBalance.toFixed(2)}</p>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Gains générés par vos investissements actifs
+              </p>
+              <div className="space-y-2">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Minimum retrait: ${minimumWithdrawal.toFixed(2)}
+                </div>
                 <button
-                  onClick={() => setDepositModalOpen(true)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white text-sm px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md dark:shadow-gray-900/50"
+                  onClick={() => canWithdraw && setWithdrawModalOpen(true)}
+                  disabled={!canWithdraw}
+                  className={`w-full text-xs px-3 py-2 rounded-lg transition-all duration-200 ${
+                    canWithdraw
+                      ? 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white transform hover:scale-105 shadow-sm hover:shadow-md'
+                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                  }`}
                 >
-                  Dépôt
-                </button>
-                <button
-                  onClick={() => setWithdrawModalOpen(true)}
-                  disabled={balance <= 0}
-                  className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md dark:shadow-gray-900/50 disabled:transform-none"
-                >
-                  Retrait
+                  {canWithdraw ? 'Retirer' : 'Montant insuffisant'}
                 </button>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 subscriptions-active-card group cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600">
+            {/* Souscriptions actives */}
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 subscriptions-active-card border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-600">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Souscriptions actives</h3>
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
-                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-              <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                {activeSubscriptionsCount}
-              </p>
-              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                Plans d&apos;investissement en cours de génération de revenus
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 sm:col-span-2 lg:col-span-1 performance-card group cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-600">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Performance totale</h3>
                 <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
                   <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
-              <p className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">${balance.toFixed(2)}</p>
+              <p className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+                {subscriptions.filter(s => s.status === 'active').length}
+              </p>
               <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                Gains cumulés depuis le début de vos investissements
+                Plans d&apos;investissement générant des revenus
+              </p>
+            </div>
+
+            {/* Performance totale */}
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow hover:shadow-lg dark:shadow-gray-900/20 transition-all duration-200 performance-card border border-gray-100 dark:border-gray-700 hover:border-orange-200 dark:hover:border-orange-600">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Performance totale</h3>
+                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-800 transition-colors">
+                  <Lightbulb className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+                ${(investedBalance + evolvingBalance).toFixed(2)}
+              </p>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                Valeur totale de votre portefeuille
               </p>
             </div>
           </div>
@@ -528,17 +594,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Modales d'onboarding */}
-          {onboardingActive && (
-            <OnboardingModal
-              steps={steps}
-              onComplete={handleComplete}
-              currentStep={currentStep}
-              onNext={handleNext}
-              onSkip={handleSkip}
-            />
-          )}
-
           {/* Modals de paiement */}
           <DepositModal
             isOpen={depositModalOpen}
@@ -550,7 +605,8 @@ export default function Dashboard() {
             isOpen={withdrawModalOpen}
             onClose={() => setWithdrawModalOpen(false)}
             onWithdraw={handleWithdraw}
-            maxAmount={balance}
+            maxAmount={evolvingBalance}
+            minimumAmount={minimumWithdrawal}
           />
         </div>
       </div>

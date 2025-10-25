@@ -20,6 +20,7 @@ function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const verified = searchParams.get('verified')
+  const errorParam = searchParams.get('error')
   const supabase = createClient()
 
   const { loading, startLoading, stopLoading } = useLoadingWithDelay({
@@ -53,6 +54,25 @@ function SignInForm() {
       return () => clearTimeout(timer)
     }
   }, [formErrorsTimestamp, formErrors])
+
+  // Effet pour gérer les erreurs passées en paramètre URL
+  useEffect(() => {
+    if (errorParam) {
+      let errorMessage = ''
+      switch (errorParam) {
+        case 'email_verification_failed':
+          errorMessage = 'Échec de la vérification de l\'email. Le lien pourrait être expiré ou invalide.'
+          break
+        case 'unexpected_error':
+          errorMessage = 'Une erreur inattendue s\'est produite lors de la vérification. Veuillez réessayer.'
+          break
+        default:
+          errorMessage = 'Une erreur s\'est produite lors de la vérification de votre email.'
+      }
+      setError(errorMessage)
+      setErrorTimestamp(Date.now())
+    }
+  }, [errorParam])
 
   const getErrorMessage = (error: any) => {
     const message = error?.message || ''
