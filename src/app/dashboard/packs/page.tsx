@@ -855,7 +855,7 @@ export default function PacksPage() {
                   </div>
                   <div>
                     <div className="text-xl">Finaliser votre paiement</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 bg-gray-50 dark:bg-gray-800/50">
                       Montant : {selectedPlan.min_amount}€ - Pack {selectedPlan.name}
                     </div>
                   </div>
@@ -1039,7 +1039,7 @@ export default function PacksPage() {
                         Traitement du paiement...
                       </div>
                     ) : (
-                      `Payer ${selectedPlan.min_amount}€ et activer mon pack ${selectedPlan.name}`
+                      'Payer ' + selectedPlan.min_amount + '€ et activer mon pack ' + selectedPlan.name
                     )}
                   </Button>
                   {(!selectedPaymentMethod || (selectedPaymentMethod === 'crypto' && !selectedCrypto)) && (
@@ -1051,6 +1051,7 @@ export default function PacksPage() {
                     En procédant au paiement, vous acceptez nos conditions générales d&apos;utilisation.
                   </p>
                 </div>
+              </div>
               </CardContent>
             </Card>
           </div>

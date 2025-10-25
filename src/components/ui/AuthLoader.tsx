@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Shield, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated' | 'error'
 
@@ -28,7 +28,7 @@ export function AuthLoader({
         }
       case 'authenticated':
         return {
-          icon: <CheckCircle className="w-12 h-12 text-green-500" />,
+          icon: <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />,
           defaultTitle: 'Authentification réussie',
           defaultDescription: 'Accès autorisé',
           bgColor: 'from-green-500/20 to-emerald-500/20',
@@ -36,7 +36,7 @@ export function AuthLoader({
         }
       case 'unauthenticated':
         return {
-          icon: <XCircle className="w-12 h-12 text-red-500" />,
+          icon: <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />,
           defaultTitle: 'Authentification requise',
           defaultDescription: 'Redirection vers la page de connexion...',
           bgColor: 'from-red-500/20 to-pink-500/20',
@@ -44,7 +44,7 @@ export function AuthLoader({
         }
       case 'error':
         return {
-          icon: <XCircle className="w-12 h-12 text-orange-500" />,
+          icon: <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />,
           defaultTitle: 'Erreur d\'authentification',
           defaultDescription: 'Une erreur est survenue',
           bgColor: 'from-orange-500/20 to-red-500/20',
@@ -68,13 +68,6 @@ export function AuthLoader({
       <div className={`absolute inset-0 bg-gradient-to-br ${statusConfig.bgColor} rounded-2xl opacity-50 blur-xl`} />
 
       <div className="relative z-10">
-        {/* Security shield background */}
-        <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
-            <Shield className="w-8 h-8 text-white" />
-          </div>
-        </div>
-
         {/* Main content */}
         <div className="mt-8">
           <motion.div
