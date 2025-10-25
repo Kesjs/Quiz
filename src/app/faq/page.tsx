@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -107,7 +107,9 @@ export default function FAQPage() {
 
   return (
     <div className="bg-black text-white">
-      <GlassNavbar />
+      <Suspense fallback={<div className="h-16 bg-black"></div>}>
+        <GlassNavbar />
+      </Suspense>
 
       {/* Hero Section */}
       <section className="relative min-h-[40vh] flex items-center justify-center overflow-hidden pt-20">

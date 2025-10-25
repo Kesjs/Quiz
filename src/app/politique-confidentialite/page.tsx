@@ -1,5 +1,6 @@
     'use client'
 
+import { Suspense } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -54,7 +55,9 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="bg-black text-white">
-      <GlassNavbar />
+      <Suspense fallback={<div className="h-16 bg-black"></div>}>
+        <GlassNavbar />
+      </Suspense>
 
       {/* Hero Section */}
       <section className="relative min-h-[30vh] flex items-center justify-center overflow-hidden pt-20">
