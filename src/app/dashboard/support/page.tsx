@@ -411,12 +411,15 @@ export default function SupportPage() {
                     onValueChange={(value) => setNewTicket(prev => ({ ...prev, category: value }))}
                   >
                     <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
                       <SelectItem value="investissement">Investissement</SelectItem>
                       <SelectItem value="paiements">Paiements</SelectItem>
                       <SelectItem value="technique">Problème technique</SelectItem>
                       <SelectItem value="compte">Gestion du compte</SelectItem>
                       <SelectItem value="autre">Autre</SelectItem>
-                    </SelectTrigger>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -427,10 +430,15 @@ export default function SupportPage() {
                   value={newTicket.priority}
                   onValueChange={(value: any) => setNewTicket(prev => ({ ...prev, priority: value }))}
                 >
-                  <SelectItem value="low">Faible</SelectItem>
-                  <SelectItem value="medium">Moyenne</SelectItem>
-                  <SelectItem value="high">Élevée</SelectItem>
-                  <SelectItem value="urgent">Urgente</SelectItem>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une priorité" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Faible</SelectItem>
+                    <SelectItem value="medium">Moyenne</SelectItem>
+                    <SelectItem value="high">Élevée</SelectItem>
+                    <SelectItem value="urgent">Urgente</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
 
